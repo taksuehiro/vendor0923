@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KBStats, Vendor } from "@/types";
+import { searchVendors, type SearchResponse } from "@/lib/fetcher";
 
 // 型定義
 interface SearchResult {
@@ -79,24 +80,37 @@ export default function MainPage() {
 
     setSearchLoading(true);
     try {
-      // モック検索結果
-      const mockResult: SearchResult = {
-        result: `「${query}」に関する検索結果です。\n\nLiberCraftは機械学習と最適化に強みを持つスクラッチ開発会社です。契約書管理や法務業務の自動化に特化しており、面談済みのベンダーです。\n\nTechCorpはクラウドインフラ構築・運用支援を提供するSaaS企業で、上場企業です。`,
-        source_documents: [
-          {
-            page_content: "LiberCraftの詳細情報: AI・機械学習を活用したスクラッチ開発サービス...",
-            metadata: { vendor_id: "V-LiberCraft", name: "LiberCraft", status: "面談済" }
-          },
-          {
-            page_content: "TechCorpの詳細情報: クラウドインフラ構築・運用支援...",
-            metadata: { vendor_id: "V-TechCorp", name: "TechCorp", status: "未面談" }
+      // RAG API呼び出し
+      const response = await searchVendors({
+        query,
+        top_k: 8,
+        mmr: 0.5,
+      });
+
+      // APIレスポンスをSearchResult形式に変換
+      const searchResult: SearchResult = {
+        result: response.hits.map(hit => 
+          `**${hit.title}** (スコア: ${(hit.score * 100).toFixed(1)}%)\n${hit.snippet}`
+        ).join('\n\n'),
+        source_documents: response.hits.map(hit => ({
+          page_content: hit.snippet,
+          metadata: {
+            vendor_id: hit.id,
+            name: hit.title,
+            status: hit.metadata.status || "不明",
+            ...hit.metadata
           }
-        ]
+        }))
       };
 
-      setSearchResult(mockResult);
+      setSearchResult(searchResult);
     } catch (error) {
       console.error("検索エラー:", error);
+      // エラー時のフォールバック
+      setSearchResult({
+        result: `検索中にエラーが発生しました: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        source_documents: []
+      });
     } finally {
       setSearchLoading(false);
     }

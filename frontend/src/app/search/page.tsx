@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { searchVendors, type SearchHit } from "@/lib/fetcher";
 
 interface SearchResult {
   id: string;
@@ -28,26 +29,17 @@ export default function SearchPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/search`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query,
-          top_k: topK,
-          mmr: 0.5,
-        }),
+      const response = await searchVendors({
+        query,
+        top_k: topK,
+        mmr: 0.5,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setResults(data.hits);
-      } else {
-        console.error("Search failed");
-      }
+      setResults(response.hits);
     } catch (error) {
       console.error("Search error:", error);
+      // エラー時のフォールバック
+      setResults([]);
     } finally {
       setLoading(false);
     }
