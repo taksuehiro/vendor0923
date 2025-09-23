@@ -5,36 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
-interface KBStats {
-  totalVendors: number;
-  byStatus: Record<string, number>;
-  byCategory: Record<string, number>;
-  missingMetadata: Record<string, number>;
-}
+import type { SearchHit, KBStats, Vendor } from "@/types";
 
 export default function KBPage() {
-  const [stats, setStats] = useState<KBStats>({
-    totalVendors: 20,
-    byStatus: {
-      "面談済": 12,
-      "未面談": 8
-    },
-    byCategory: {
-      "スクラッチ": 8,
-      "SaaS": 7,
-      "SI": 5
-    },
-    missingMetadata: {
-      "vendor_id": 0,
-      "name": 0,
-      "category": 0,
-      "status": 0
-    }
-  });
-
   const [testQuery, setTestQuery] = useState("");
-  const [testResults, setTestResults] = useState<any[]>([]);
+  const [testResults, setTestResults] = useState<SearchHit[]>([]);
   const [testLoading, setTestLoading] = useState(false);
 
   const handleTestSearch = async () => {
@@ -42,30 +17,89 @@ export default function KBPage() {
 
     setTestLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/search`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      // モック検索結果
+      const mockResults: SearchHit[] = [
+        {
+          id: "vendor_1",
+          title: "LiberCraft",
+          snippet: "AI・機械学習を活用したスクラッチ開発サービス",
+          score: 0.95,
+          vendorId: "V-LiberCraft"
         },
-        body: JSON.stringify({
-          query: testQuery,
-          top_k: 3,
-          mmr: 0.5,
-        }),
-      });
+        {
+          id: "vendor_2",
+          title: "TechCorp",
+          snippet: "クラウドインフラ構築・運用支援",
+          score: 0.87,
+          vendorId: "V-TechCorp"
+        }
+      ];
 
-      if (response.ok) {
-        const data = await response.json();
-        setTestResults(data.hits);
-      } else {
-        console.error("Test search failed");
-      }
+      setTestResults(mockResults);
     } catch (error) {
       console.error("Test search error:", error);
     } finally {
       setTestLoading(false);
     }
   };
+
+  // モックデータの生成
+  const mockStats: KBStats = {
+    totalVendors: 20,
+    missingCount: 0,
+    byFormat: {
+      "JSON": 20
+    },
+    byStatus: {
+      "面談済": 12,
+      "未面談": 8
+    },
+    topCategories: [
+      { name: "スクラッチ", count: 8 },
+      { name: "SaaS", count: 7 },
+      { name: "SI", count: 5 }
+    ]
+  };
+
+  const mockVendors: Vendor[] = [
+    {
+      id: "vendor_1",
+      name: "LiberCraft",
+      status: "面談済",
+      listed: false,
+      type: "スクラッチ",
+      category: ["スクラッチ"],
+      meta: {
+        url: "https://libercraft.com",
+        employees_band: "1-10",
+        investors: ["投資家A"]
+      }
+    },
+    {
+      id: "vendor_2",
+      name: "TechCorp",
+      status: "未面談",
+      listed: true,
+      type: "SaaS",
+      category: ["SaaS"],
+      meta: {
+        employees_band: "100-500",
+        investors: ["投資家B", "投資家C"]
+      }
+    },
+    {
+      id: "vendor_3",
+      name: "DataSoft",
+      status: "面談済",
+      listed: false,
+      type: "SI",
+      category: ["SI"],
+      meta: {
+        employees_band: "50-100",
+        investors: ["投資家D"]
+      }
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -92,7 +126,7 @@ export default function KBPage() {
               <CardContent className="space-y-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-3xl font-bold text-blue-600">
-                    {stats.totalVendors}
+                    {mockStats.totalVendors}
                   </div>
                   <div className="text-blue-800">総ベンダー数</div>
                 </div>
@@ -100,10 +134,10 @@ export default function KBPage() {
                 <div>
                   <h3 className="font-semibold mb-2">ステータス内訳</h3>
                   <div className="space-y-1">
-                    {Object.entries(stats.byStatus).map(([status, count]) => (
+                    {Object.entries(mockStats.byStatus).map(([status, count]) => (
                       <div key={status} className="flex justify-between">
                         <span>{status}</span>
-                        <span className="font-medium">{count}社</span>
+                        <span className="font-medium">{count as number}社</span>
                       </div>
                     ))}
                   </div>
@@ -112,10 +146,10 @@ export default function KBPage() {
                 <div>
                   <h3 className="font-semibold mb-2">カテゴリ上位</h3>
                   <div className="space-y-1">
-                    {Object.entries(stats.byCategory).map(([category, count]) => (
-                      <div key={category} className="flex justify-between">
-                        <span>{category}</span>
-                        <span className="font-medium">{count}社</span>
+                    {mockStats.topCategories.map((category: { name: string; count: number }) => (
+                      <div key={category.name} className="flex justify-between">
+                        <span>{category.name}</span>
+                        <span className="font-medium">{category.count}社</span>
                       </div>
                     ))}
                   </div>
@@ -131,22 +165,17 @@ export default function KBPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {Object.values(stats.missingMetadata).every(count => count === 0) ? (
+                {mockStats.missingCount === 0 ? (
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <div className="text-green-600 font-semibold">
                       ✅ メタデータ欠損なし
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {Object.entries(stats.missingMetadata).map(([field, count]) => (
-                      count > 0 && (
-                        <div key={field} className="flex justify-between text-orange-600">
-                          <span>{field}</span>
-                          <span>{count}件</span>
-                        </div>
-                      )
-                    ))}
+                  <div className="text-center p-4 bg-orange-50 rounded-lg">
+                    <div className="text-orange-600 font-semibold">
+                      ⚠️ メタデータ欠損: {mockStats.missingCount}件
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -169,8 +198,8 @@ export default function KBPage() {
                     id="testQuery"
                     placeholder="例: 契約書管理、AI、クラウド"
                     value={testQuery}
-                    onChange={(e) => setTestQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleTestSearch()}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTestQuery(e.target.value)}
+                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleTestSearch()}
                   />
                 </div>
                 <Button 
@@ -192,11 +221,11 @@ export default function KBPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {testResults.map((result, index) => (
+                  {testResults.map((result) => (
                     <div key={result.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold">
-                          #{index + 1} {result.title}
+                          {result.title}
                         </h4>
                         <div className="text-sm text-gray-500">
                           スコア: {(result.score * 100).toFixed(1)}%
@@ -207,10 +236,7 @@ export default function KBPage() {
                       </p>
                       <div className="flex gap-2">
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                          {result.metadata.status}
-                        </span>
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                          {result.metadata.category}
+                          ID: {result.vendorId}
                         </span>
                       </div>
                     </div>
@@ -225,36 +251,14 @@ export default function KBPage() {
         <div className="mt-8">
           <Card>
             <CardHeader>
-              <CardTitle>サンプルデータ（先頭5件）</CardTitle>
+              <CardTitle>サンプルデータ（先頭3件）</CardTitle>
               <CardDescription>
                 登録済みベンダーデータのプレビュー
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  {
-                    id: "vendor_1",
-                    name: "LiberCraft",
-                    category: "スクラッチ",
-                    status: "面談済",
-                    snippet: "AI・機械学習を活用したスクラッチ開発サービス。契約書管理、法務業務の自動化に強み。"
-                  },
-                  {
-                    id: "vendor_2",
-                    name: "TechCorp",
-                    category: "SaaS",
-                    status: "未面談",
-                    snippet: "クラウドインフラ構築・運用支援。AWS、Azure対応。スケーラブルなシステム構築が得意。"
-                  },
-                  {
-                    id: "vendor_3",
-                    name: "DataSoft",
-                    category: "SI",
-                    status: "面談済",
-                    snippet: "データ分析・BIツール開発。大規模データ処理、可視化、レポート自動化に強み。"
-                  }
-                ].map((vendor, index) => (
+                {mockVendors.map((vendor, index) => (
                   <div key={vendor.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-semibold">
@@ -265,13 +269,20 @@ export default function KBPage() {
                           {vendor.status}
                         </span>
                         <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                          {vendor.category}
+                          {vendor.type}
                         </span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      {vendor.snippet}
-                    </p>
+                    <div className="space-y-2">
+                      <p><strong>カテゴリ:</strong> {vendor.category?.join(", ")}</p>
+                      <p><strong>上場:</strong> {vendor.listed ? "上場" : "未上場"}</p>
+                      {vendor.meta && (
+                        <div className="text-sm text-gray-600">
+                          <p><strong>従業員規模:</strong> {vendor.meta.employees_band as string}</p>
+                          <p><strong>投資家:</strong> {(vendor.meta.investors as string[])?.join(", ")}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

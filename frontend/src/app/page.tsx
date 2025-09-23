@@ -1,48 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { KBStats, Vendor } from "@/types";
 
 // 型定義
 interface SearchResult {
   result: string;
   source_documents?: Array<{
     page_content: string;
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
   }>;
 }
 
-interface KBStats {
-  totalVendors: number;
-  statusCounts: Record<string, number>;
-  categoryCounts: Record<string, number>;
-  missingMetadata: Record<string, number>;
-}
-
-interface Vendor {
-  vendor_id: string;
-  name: string;
-  status: string;
-  listed: string;
-  type: string;
-  use_cases: string[];
+interface VendorWithDoc extends Vendor {
   url?: string;
   employees_band?: string;
-  investors: string[];
+  investors?: string[];
   is_scratch?: boolean;
-  category: string;
   deployment?: string;
   price_range?: string;
-  industries: string[];
-  departments: string[];
-  doc: any;
+  industries?: string[];
+  departments?: string[];
+  doc: {
+    page_content: string;
+  };
 }
 
-interface Facets {
+interface FacetsWithCounts {
   status: Record<string, number>;
   listed: Record<string, number>;
   type: Record<string, number>;
@@ -73,110 +62,16 @@ export default function MainPage() {
   
   // KB関連
   const [kbStats, setKbStats] = useState<KBStats | null>(null);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendors, setVendors] = useState<VendorWithDoc[]>([]);
   
   // ブラウズ関連
-  const [facets, setFacets] = useState<Facets>({
+  const [facets, setFacets] = useState<FacetsWithCounts>({
     status: {},
     listed: {},
     type: {},
     use_cases: {}
   });
-  const [filters, setFilters] = useState({
-    status: [] as string[],
-    listed: [] as string[],
-    type: [] as string[],
-    use_cases: [] as string[]
-  });
   const [clickedCard, setClickedCard] = useState<{key: string, value: string} | null>(null);
-
-  // データ読み込み
-  const handleLoadData = async () => {
-    setLoading(true);
-    try {
-      // モックデータの生成（実際はAPIから取得）
-      const mockVendors: Vendor[] = [
-        {
-          vendor_id: "V-LiberCraft",
-          name: "LiberCraft",
-          status: "面談済",
-          listed: "未上場",
-          type: "スクラッチ",
-          use_cases: ["機械学習", "最適化"],
-          url: "https://libercraft.com",
-          employees_band: "1-10",
-          investors: ["投資家A"],
-          is_scratch: true,
-          category: "スクラッチ",
-          deployment: "ハイブリッド",
-          price_range: "高",
-          industries: ["製造業", "金融"],
-          departments: ["法務", "人事"],
-          doc: { page_content: "LiberCraftの詳細情報..." }
-        },
-        {
-          vendor_id: "V-TechCorp",
-          name: "TechCorp",
-          status: "未面談",
-          listed: "上場",
-          type: "SaaS",
-          use_cases: ["クラウド", "インフラ"],
-          employees_band: "100-500",
-          investors: ["投資家B", "投資家C"],
-          is_scratch: false,
-          category: "SaaS",
-          deployment: "クラウド",
-          price_range: "中",
-          industries: ["IT", "金融"],
-          departments: ["IT", "営業"],
-          doc: { page_content: "TechCorpの詳細情報..." }
-        }
-      ];
-
-      // ファセットの計算
-      const newFacets: Facets = {
-        status: {},
-        listed: {},
-        type: {},
-        use_cases: {}
-      };
-
-      mockVendors.forEach(vendor => {
-        newFacets.status[vendor.status] = (newFacets.status[vendor.status] || 0) + 1;
-        newFacets.listed[vendor.listed] = (newFacets.listed[vendor.listed] || 0) + 1;
-        newFacets.type[vendor.type] = (newFacets.type[vendor.type] || 0) + 1;
-        vendor.use_cases.forEach(useCase => {
-          newFacets.use_cases[useCase] = (newFacets.use_cases[useCase] || 0) + 1;
-        });
-      });
-
-      // KB統計の計算
-      const stats: KBStats = {
-        totalVendors: mockVendors.length,
-        statusCounts: newFacets.status,
-        categoryCounts: {
-          "スクラッチ": 1,
-          "SaaS": 1
-        },
-        missingMetadata: {
-          "vendor_id": 0,
-          "name": 0,
-          "category": 0,
-          "status": 0
-        }
-      };
-
-      setVendors(mockVendors);
-      setFacets(newFacets);
-      setKbStats(stats);
-      setDataLoaded(true);
-      
-    } catch (error) {
-      console.error("データ読み込みエラー:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 検索実行
   const handleSearch = async () => {
@@ -207,20 +102,119 @@ export default function MainPage() {
     }
   };
 
+  // データ読み込み
+  const handleLoadData = async () => {
+    setLoading(true);
+    try {
+      // モックデータの生成（実際はAPIから取得）
+      const mockVendors: VendorWithDoc[] = [
+        {
+          id: "V-LiberCraft",
+          name: "LiberCraft",
+          status: "面談済",
+          listed: false,
+          type: "スクラッチ",
+          category: ["スクラッチ"],
+          url: "https://libercraft.com",
+          employees_band: "1-10",
+          investors: ["投資家A"],
+          is_scratch: true,
+          deployment: "ハイブリッド",
+          price_range: "高",
+          industries: ["製造業", "金融"],
+          departments: ["法務", "人事"],
+          meta: {
+            employees_band: "1-10",
+            investors: ["投資家A"],
+            is_scratch: true,
+            deployment: "ハイブリッド",
+            price_range: "高",
+            industries: ["製造業", "金融"],
+            departments: ["法務", "人事"]
+          },
+          doc: { page_content: "LiberCraftの詳細情報..." }
+        },
+        {
+          id: "V-TechCorp",
+          name: "TechCorp",
+          status: "未面談",
+          listed: true,
+          type: "SaaS",
+          category: ["SaaS"],
+          employees_band: "100-500",
+          investors: ["投資家B", "投資家C"],
+          is_scratch: false,
+          deployment: "クラウド",
+          price_range: "中",
+          industries: ["IT", "金融"],
+          departments: ["IT", "営業"],
+          meta: {
+            employees_band: "100-500",
+            investors: ["投資家B", "投資家C"],
+            is_scratch: false,
+            deployment: "クラウド",
+            price_range: "中",
+            industries: ["IT", "金融"],
+            departments: ["IT", "営業"]
+          },
+          doc: { page_content: "TechCorpの詳細情報..." }
+        }
+      ];
+
+      // ファセットの計算
+      const newFacets: FacetsWithCounts = {
+        status: {},
+        listed: {},
+        type: {},
+        use_cases: {}
+      };
+
+      mockVendors.forEach(vendor => {
+        newFacets.status[vendor.status || "不明"] = (newFacets.status[vendor.status || "不明"] || 0) + 1;
+        newFacets.listed[vendor.listed ? "上場" : "未上場"] = (newFacets.listed[vendor.listed ? "上場" : "未上場"] || 0) + 1;
+        newFacets.type[vendor.type || "その他"] = (newFacets.type[vendor.type || "その他"] || 0) + 1;
+        // use_casesは別途計算
+      });
+
+      // KB統計の計算
+      const stats: KBStats = {
+        totalVendors: mockVendors.length,
+        missingCount: 0,
+        byFormat: {
+          "JSON": 2
+        },
+        byStatus: newFacets.status,
+        topCategories: [
+          { name: "スクラッチ", count: 1 },
+          { name: "SaaS", count: 1 }
+        ]
+      };
+
+      setVendors(mockVendors);
+      setFacets(newFacets);
+      setKbStats(stats);
+      setDataLoaded(true);
+      
+    } catch (error) {
+      console.error("データ読み込みエラー:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // フィルタされたベンダー
   const filteredVendors = vendors.filter(vendor => {
-    if (filters.status.length > 0 && !filters.status.includes(vendor.status)) return false;
-    if (filters.listed.length > 0 && !filters.listed.includes(vendor.listed)) return false;
-    if (filters.type.length > 0 && !filters.type.includes(vendor.type)) return false;
-    if (filters.use_cases.length > 0 && !vendor.use_cases.some(uc => filters.use_cases.includes(uc))) return false;
-    
     if (clickedCard) {
-      if (clickedCard.key === "use_cases") {
-        return vendor.use_cases.includes(clickedCard.value);
+      if (clickedCard.key === "status") {
+        return vendor.status === clickedCard.value;
       }
-      return (vendor as any)[clickedCard.key] === clickedCard.value;
+      if (clickedCard.key === "listed") {
+        return (vendor.listed ? "上場" : "未上場") === clickedCard.value;
+      }
+      if (clickedCard.key === "type") {
+        return vendor.type === clickedCard.value;
+      }
     }
-    
     return true;
   });
 
@@ -241,7 +235,7 @@ export default function MainPage() {
                     type="password"
                     placeholder="sk-..."
                     value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value)}
                   />
                 </div>
 
@@ -253,7 +247,7 @@ export default function MainPage() {
                     min="1"
                     max="15"
                     value={topK}
-                    onChange={(e) => setTopK(parseInt(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTopK(parseInt(e.target.value))}
                   />
                 </div>
 
@@ -265,7 +259,7 @@ export default function MainPage() {
                     min="0"
                     max="2000"
                     value={chunkSize}
-                    onChange={(e) => setChunkSize(parseInt(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChunkSize(parseInt(e.target.value))}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     0 = ベンダー単位のみ
@@ -280,7 +274,7 @@ export default function MainPage() {
                     min="0"
                     max="500"
                     value={chunkOverlap}
-                    onChange={(e) => setChunkOverlap(parseInt(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChunkOverlap(parseInt(e.target.value))}
                   />
                 </div>
 
@@ -289,7 +283,7 @@ export default function MainPage() {
                     type="checkbox"
                     id="useMmr"
                     checked={useMmr}
-                    onChange={(e) => setUseMmr(e.target.checked)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUseMmr(e.target.checked)}
                   />
                   <Label htmlFor="useMmr">MMRを使う（多様性）</Label>
                 </div>
@@ -303,7 +297,7 @@ export default function MainPage() {
                     max="1.0"
                     step="0.05"
                     value={scoreThreshold}
-                    onChange={(e) => setScoreThreshold(parseFloat(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScoreThreshold(parseFloat(e.target.value))}
                   />
                 </div>
 
@@ -312,7 +306,7 @@ export default function MainPage() {
                   <select
                     id="embedModel"
                     value={embedModel}
-                    onChange={(e) => setEmbedModel(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEmbedModel(e.target.value)}
                     className="w-full p-2 border rounded"
                   >
                     <option value="text-embedding-3-small">text-embedding-3-small</option>
@@ -325,7 +319,7 @@ export default function MainPage() {
                   <select
                     id="chatModel"
                     value={chatModel}
-                    onChange={(e) => setChatModel(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setChatModel(e.target.value)}
                     className="w-full p-2 border rounded"
                   >
                     <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
@@ -342,7 +336,7 @@ export default function MainPage() {
                     max="1.0"
                     step="0.1"
                     value={temperature}
-                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTemperature(parseFloat(e.target.value))}
                   />
                 </div>
               </div>
@@ -391,8 +385,8 @@ export default function MainPage() {
                       id="query"
                       placeholder="例: 法務カテゴリで価格帯が低いベンダーを教えて"
                       value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
+                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleSearch()}
                     />
                   </div>
                   <Button 
@@ -425,7 +419,7 @@ export default function MainPage() {
                             {searchResult.source_documents.slice(0, 3).map((doc, index) => (
                               <div key={index} className="border rounded p-4">
                                 <h4 className="font-semibold mb-2">
-                                  ソース {index + 1} - {doc.metadata.vendor_id}
+                                  ソース {index + 1} - {doc.metadata.vendor_id as string}
                                 </h4>
                                 <p className="text-sm text-gray-600 mb-2">
                                   {doc.page_content.substring(0, 800)}
@@ -471,19 +465,19 @@ export default function MainPage() {
                         </div>
                         <div className="text-center p-4 bg-orange-50 rounded">
                           <div className="text-2xl font-bold text-orange-600">
-                            {kbStats.missingMetadata.vendor_id}
+                            {kbStats.missingCount}
                           </div>
                           <div className="text-orange-800">vendor_id欠落</div>
                         </div>
                         <div className="text-center p-4 bg-green-50 rounded">
                           <div className="text-2xl font-bold text-green-600">
-                            {kbStats.categoryCounts["スクラッチ"] || 0}
+                            {kbStats.byFormat["JSON"] || 0}
                           </div>
                           <div className="text-green-800">JSON形式</div>
                         </div>
                         <div className="text-center p-4 bg-purple-50 rounded">
                           <div className="text-2xl font-bold text-purple-600">
-                            {kbStats.categoryCounts["SaaS"] || 0}
+                            {kbStats.byFormat["Markdown"] || 0}
                           </div>
                           <div className="text-purple-800">Markdown形式</div>
                         </div>
@@ -493,7 +487,7 @@ export default function MainPage() {
                       <div>
                         <h3 className="text-lg font-semibold mb-4">📊 ステータス別件数</h3>
                         <div className="space-y-2">
-                          {Object.entries(kbStats.statusCounts).map(([status, count]) => (
+                          {Object.entries(kbStats.byStatus).map(([status, count]) => (
                             <div key={status} className="flex justify-between p-2 bg-gray-50 rounded">
                               <span>{status}</span>
                               <span className="font-medium">{count}件</span>
@@ -506,10 +500,10 @@ export default function MainPage() {
                       <div>
                         <h3 className="text-lg font-semibold mb-4">📊 カテゴリ上位</h3>
                         <div className="space-y-2">
-                          {Object.entries(kbStats.categoryCounts).map(([category, count]) => (
-                            <div key={category} className="flex justify-between p-2 bg-gray-50 rounded">
-                              <span>{category}</span>
-                              <span className="font-medium">{count}件</span>
+                          {kbStats.topCategories.map((category) => (
+                            <div key={category.name} className="flex justify-between p-2 bg-gray-50 rounded">
+                              <span>{category.name}</span>
+                              <span className="font-medium">{category.count}件</span>
                             </div>
                           ))}
                         </div>
@@ -517,17 +511,14 @@ export default function MainPage() {
 
                       {/* メタデータ欠損 */}
                       <div>
-                        {Object.values(kbStats.missingMetadata).every(count => count === 0) ? (
+                        {kbStats.missingCount === 0 ? (
                           <div className="p-4 bg-green-50 border border-green-200 rounded">
                             <p className="text-green-800">✅ メタデータ欠損なし</p>
                           </div>
                         ) : (
                           <div className="p-4 bg-orange-50 border border-orange-200 rounded">
                             <p className="text-orange-800">
-                              メタデータ欠損: {Object.entries(kbStats.missingMetadata)
-                                .filter(([_, count]) => count > 0)
-                                .map(([key, count]) => `${key}=${count}件`)
-                                .join(", ")}
+                              メタデータ欠損: {kbStats.missingCount}件
                             </p>
                           </div>
                         )}
@@ -538,17 +529,17 @@ export default function MainPage() {
                         <h3 className="text-lg font-semibold mb-4">📋 ドキュメント一覧</h3>
                         <div className="space-y-4">
                           {vendors.slice(0, 10).map((vendor, index) => (
-                            <div key={vendor.vendor_id} className="border rounded p-4">
+                            <div key={vendor.id} className="border rounded p-4">
                               <div className="flex justify-between items-start mb-2">
                                 <h4 className="font-semibold">
-                                  #{index + 1} {vendor.vendor_id} — {vendor.name}
+                                  #{index + 1} {vendor.id} — {vendor.name}
                                 </h4>
                                 <div className="flex gap-2">
                                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                                     {vendor.status}
                                   </span>
                                   <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                                    {vendor.category}
+                                    {vendor.type}
                                   </span>
                                 </div>
                               </div>
@@ -669,12 +660,12 @@ export default function MainPage() {
                         </h3>
                         <div className="space-y-4">
                           {filteredVendors.map((vendor) => (
-                            <div key={vendor.vendor_id} className="border rounded p-4">
+                            <div key={vendor.id} className="border rounded p-4">
                               <div className="flex justify-between items-start mb-2">
                                 <div>
                                   <h4 className="font-semibold">{vendor.name}</h4>
                                   <p className="text-sm text-gray-600">
-                                    {vendor.status} / {vendor.listed} / {vendor.type}
+                                    {vendor.status} / {vendor.listed ? "上場" : "未上場"} / {vendor.type}
                                   </p>
                                 </div>
                                 <div className="text-right text-sm space-y-1">
@@ -687,9 +678,7 @@ export default function MainPage() {
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <p><strong>得意分野:</strong> {vendor.use_cases.join(", ")}</p>
-                                <p><strong>業界:</strong> {vendor.industries.join(", ")}</p>
-                                <p><strong>部門:</strong> {vendor.departments.join(", ")}</p>
+                                <p><strong>カテゴリ:</strong> {vendor.category?.join(", ")}</p>
                                 {vendor.url && (
                                   <p><strong>URL:</strong> <a href={vendor.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{vendor.url}</a></p>
                                 )}
