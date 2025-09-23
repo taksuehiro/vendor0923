@@ -8,12 +8,16 @@ from dotenv import load_dotenv
 # 環境変数の読み込み
 load_dotenv()
 
+from rag_core import search_vendors  # ← 追加
+
 app = FastAPI(title="Vendor RAG API", version="1.0.0")
 
-# CORS設定
+# CORS: 環境変数 ALLOWED_ORIGINS にカンマ区切りで指定（ローカル & Amplify を両方許可）
+allowed = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.jsのデフォルトポート
+    allow_origins=[o.strip() for o in allowed if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,14 +27,14 @@ app.add_middleware(
 class SearchRequest(BaseModel):
     query: str
     top_k: int = 5
-    mmr: float = 0.5
+    mmr: Optional[float] = None  # いまは未使用。将来の拡張用
 
 class SearchResult(BaseModel):
     id: str
     title: str
     score: float
     snippet: str
-    metadata: dict
+    metadata: dict = {}
 
 class SearchResponse(BaseModel):
     hits: List[SearchResult]
@@ -74,28 +78,14 @@ async def get_current_user():
         email="admin@example.com"
     )
 
-# 検索エンドポイント（モック）
+# ★ 差し替え：RAG 呼び出し
 @app.post("/search", response_model=SearchResponse)
-async def search_vendors(request: SearchRequest):
-    # モック実装：実際のRAG機能は後で実装
-    mock_results = [
-        SearchResult(
-            id="vendor_1",
-            title="LiberCraft",
-            score=0.95,
-            snippet="AI・機械学習を活用したスクラッチ開発サービス",
-            metadata={"status": "面談済", "category": "スクラッチ"}
-        ),
-        SearchResult(
-            id="vendor_2", 
-            title="TechCorp",
-            score=0.87,
-            snippet="クラウドインフラ構築・運用支援",
-            metadata={"status": "未面談", "category": "SaaS"}
-        )
-    ]
-    
-    return SearchResponse(hits=mock_results[:request.top_k])
+async def search_endpoint(request: SearchRequest):
+    try:
+        results = search_vendors(request.query, top_k=request.top_k)
+        return SearchResponse(hits=[SearchResult(**r) for r in results])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
