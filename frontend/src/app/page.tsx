@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KBStats, Vendor } from "@/types";
-import { searchVendors, type SearchResponse } from "@/lib/fetcher";
+import { searchVendors, type SearchResponse, type SearchResult } from "@/lib/fetcher";
 
 // 型定義
-interface SearchResult {
+interface SearchResultData {
   result: string;
   source_documents?: Array<{
     page_content: string;
@@ -58,7 +58,7 @@ export default function MainPage() {
   
   // 検索関連
   const [query, setQuery] = useState("");
-  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
+  const [searchResult, setSearchResult] = useState<SearchResultData | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
   
   // KB関連
@@ -87,8 +87,8 @@ export default function MainPage() {
         mmr: 0.5,
       });
 
-      // APIレスポンスをSearchResult形式に変換
-      const searchResult: SearchResult = {
+          // APIレスポンスをSearchResultData形式に変換
+          const searchResult: SearchResultData = {
         result: response.hits.map(hit => 
           `**${hit.title}** (スコア: ${(hit.score * 100).toFixed(1)}%)\n${hit.snippet}`
         ).join('\n\n'),
@@ -97,8 +97,8 @@ export default function MainPage() {
           metadata: {
             vendor_id: hit.id,
             name: hit.title,
-            status: hit.metadata.status || "不明",
-            ...hit.metadata
+            status: hit.metadata.status,
+            category: hit.metadata.category
           }
         }))
       };

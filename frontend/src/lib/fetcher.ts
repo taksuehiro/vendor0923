@@ -19,16 +19,19 @@ export interface SearchRequest {
   mmr?: number;
 }
 
-export interface SearchHit {
+export interface SearchResult {
   id: string;
   title: string;
   score: number;
   snippet: string;
-  metadata: Record<string, unknown>;
+  metadata: {
+    status: string;
+    category: string;
+  };
 }
 
 export interface SearchResponse {
-  hits: SearchHit[];
+  hits: SearchResult[];
 }
 
 export async function searchVendors(request: SearchRequest): Promise<SearchResponse> {

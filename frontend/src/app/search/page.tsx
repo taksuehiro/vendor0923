@@ -5,18 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { searchVendors, type SearchHit } from "@/lib/fetcher";
+import { searchVendors, type SearchResult } from "@/lib/fetcher";
 
-interface SearchResult {
-  id: string;
-  title: string;
-  score: number;
-  snippet: string;
-  metadata: {
-    status: string;
-    category: string;
-  };
-}
+// SearchResult型は既にfetcher.tsで定義済み
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");

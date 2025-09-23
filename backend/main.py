@@ -39,7 +39,7 @@ class SearchResult(BaseModel):
     title: str
     score: float
     snippet: str
-    metadata: dict = {}
+    metadata: dict = {"status": "", "category": ""}
 
 class SearchResponse(BaseModel):
     hits: List[SearchResult]

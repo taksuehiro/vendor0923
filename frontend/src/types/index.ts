@@ -1,13 +1,13 @@
 // src/types/index.ts
-export interface SearchHit {
+export interface SearchResult {
   id: string;
   title: string;
-  snippet: string;
   score: number;
-  // 追加のメタがあるなら optional に
-  sourceUrl?: string;
-  vendorId?: string | number;
-  [k: string]: unknown;
+  snippet: string;
+  metadata: {
+    status: string;
+    category: string;
+  };
 }
 
 export interface SearchRequest {
@@ -17,7 +17,7 @@ export interface SearchRequest {
 }
 
 export interface SearchResponse {
-  hits: SearchHit[];
+  hits: SearchResult[];
 }
 
 export interface KBStats {

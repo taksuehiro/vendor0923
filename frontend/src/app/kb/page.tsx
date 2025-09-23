@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import type { SearchHit, KBStats, Vendor } from "@/types";
+import type { SearchResult, KBStats, Vendor } from "@/types";
 
 export default function KBPage() {
   const [testQuery, setTestQuery] = useState("");
-  const [testResults, setTestResults] = useState<SearchHit[]>([]);
+  const [testResults, setTestResults] = useState<SearchResult[]>([]);
   const [testLoading, setTestLoading] = useState(false);
 
   const handleTestSearch = async () => {
@@ -18,20 +18,26 @@ export default function KBPage() {
     setTestLoading(true);
     try {
       // モック検索結果
-      const mockResults: SearchHit[] = [
+      const mockResults: SearchResult[] = [
         {
           id: "vendor_1",
           title: "LiberCraft",
           snippet: "AI・機械学習を活用したスクラッチ開発サービス",
           score: 0.95,
-          vendorId: "V-LiberCraft"
+          metadata: {
+            status: "面談済",
+            category: "スクラッチ開発"
+          }
         },
         {
           id: "vendor_2",
           title: "TechCorp",
           snippet: "クラウドインフラ構築・運用支援",
           score: 0.87,
-          vendorId: "V-TechCorp"
+          metadata: {
+            status: "未面談",
+            category: "SaaS"
+          }
         }
       ];
 
@@ -236,7 +242,7 @@ export default function KBPage() {
                       </p>
                       <div className="flex gap-2">
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                          ID: {result.vendorId}
+                          ID: {result.id}
                         </span>
                       </div>
                     </div>
