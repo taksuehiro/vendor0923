@@ -1,12 +1,17 @@
+from dotenv import load_dotenv
+import os
+
+# 環境変数の読み込み（.env.local を優先）
+load_dotenv('.env.local')  # ローカル開発用
+load_dotenv()              # フォールバック用
+
+# デバッグ用（本番では削除）
+print(f"OPENAI_API_KEY loaded: {bool(os.getenv('OPENAI_API_KEY'))}")
+
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
-import os
-from dotenv import load_dotenv
-
-# 環境変数の読み込み
-load_dotenv()
 
 from rag_core import search_vendors  # ← 追加
 
