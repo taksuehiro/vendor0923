@@ -1,46 +1,29 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-northeast-1
+    REPO_NAME: vendor0919-api
+
 phases:
   pre_build:
     commands:
-      # ECRログイン
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com
-      
-      # 変数設定
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/vendor0919-api
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION \
+        | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - IMAGE_TAG=$(date +%Y%m%d%H%M)
-      - echo Repository URI: $REPOSITORY_URI
-      - echo Image tag: $IMAGE_TAG
-
+      - REPO_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$REPO_NAME
   build:
     commands:
-      # Docker build実行
       - echo Build started on `date`
-      - cd backend
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
-
+      - docker build -t $REPO_URI:$IMAGE_TAG backend
   post_build:
     commands:
-      # Docker push実行
       - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      
-      # imagedefinitions.json生成
-      - echo Creating imagedefinitions.json...
-      - echo '[{"name":"api","imageUri":"'$REPOSITORY_URI:$IMAGE_TAG'"}]' > imagedefinitions.json
-      - echo imagedefinitions.json contents:
-      - cat imagedefinitions.json
+      - docker push $REPO_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"api","imageUri":"%s"}]' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
-  files:
-    - imagedefinitions.json
-  name: vendor0919-$(date +%Y%m%d%H%M)
-
-cache:
-  paths:
-    - '/root/.cache/**/*'
+  files: imagedefinitions.json
