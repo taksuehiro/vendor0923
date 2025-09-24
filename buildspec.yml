@@ -3,22 +3,44 @@ version: 0.2
 phases:
   pre_build:
     commands:
+      # ECRログイン
       - echo Logging in to Amazon ECR...
-      - aws --version
-      - ACCOUNT_ID=$(aws sts get-caller-identity --query account --output text)
-      - REPO_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/vendor-rag-be
-      - echo $REPO_URI
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPO_URI
+      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com
+      
+      # 変数設定
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/vendor0919-api
+      - IMAGE_TAG=$(date +%Y%m%d%H%M)
+      - echo Repository URI: $REPOSITORY_URI
+      - echo Image tag: $IMAGE_TAG
+
   build:
     commands:
+      # Docker build実行
       - echo Build started on `date`
-      - docker build -t $REPO_URI:latest ./backend
+      - cd backend
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+
   post_build:
     commands:
+      # Docker push実行
       - echo Build completed on `date`
-      - docker push $REPO_URI:latest
-      - printf '[{"name":"api","imageUri":"%s"}]' $REPO_URI:latest > imagedefinitions.json
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      
+      # imagedefinitions.json生成
+      - echo Creating imagedefinitions.json...
+      - echo '[{"name":"api","imageUri":"'$REPOSITORY_URI:$IMAGE_TAG'"}]' > imagedefinitions.json
+      - echo imagedefinitions.json contents:
+      - cat imagedefinitions.json
+
 artifacts:
-  files: imagedefinitions.json
+  files:
+    - imagedefinitions.json
+  name: vendor0919-$(date +%Y%m%d%H%M)
 
-
+cache:
+  paths:
+    - '/root/.cache/**/*'
