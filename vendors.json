@@ -1,0 +1,14 @@
+{
+  "vendors": [
+    {
+      "id": "001",
+      "name": "ベンダーA",
+      "category": "テスト"
+    },
+    {
+      "id": "002",
+      "name": "ベンダーB",
+      "category": "テスト (updated)"
+    }
+  ]
+}
