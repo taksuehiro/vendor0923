@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
-from rag_core import search_vendors  # ← 追加
+from rag_core import search_vendors, get_rag  # ← 追加
 
 app = FastAPI(title="Vendor RAG API", version="1.0.0")
 
@@ -60,7 +60,13 @@ class UserResponse(BaseModel):
 # ヘルスチェック
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    # VendorRAG 初期化済み想定 or lazy init で参照
+    try:
+        rag = get_rag()
+        src = getattr(rag, "vectorstore_source", None) or "unknown"
+    except Exception:
+        src = "error"
+    return {"status": "ok", "vectorstore_source": src}
 
 # 認証エンドポイント（モック）
 @app.post("/auth/verify", response_model=AuthResponse)

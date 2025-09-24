@@ -104,3 +104,4 @@ if st.button("検索する", use_container_width=True):
         except Exception as e:
             st.error(f"検索エラー: {e}")
 
+

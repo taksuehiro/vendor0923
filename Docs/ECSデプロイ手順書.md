@@ -109,3 +109,5 @@ curl -X POST http://vendor-mock-alb-29008868.ap-northeast-1.elb.amazonaws.com/se
 1. ステージング環境のフロントエンドからRAG検索機能が利用できる
 2. vendors.jsonの実際のベンダーデータが検索結果として返される
 3. LiberCraft/TechCorpのモックデータではなく、実際のデータが表示される
+
+

@@ -20,3 +20,5 @@ phases:
       - printf '[{"name":"api","imageUri":"%s"}]' $REPO_URI:latest > imagedefinitions.json
 artifacts:
   files: imagedefinitions.json
+
+

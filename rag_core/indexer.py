@@ -7,8 +7,12 @@ from typing import Iterable, List, Optional
 from langchain.schema import Document
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
+import os
+import logging
 
 from rag_core.loaders.json_loader import load_json_as_documents
+
+log = logging.getLogger(__name__)
 
 # 既存 splitter.py の関数をインポート
 def _import_md_splitter():
@@ -104,4 +108,14 @@ def build_faiss(
         out_dir.mkdir(parents=True, exist_ok=True)
         safe = _ascii_safe(str(out_dir))
         vs.save_local(out_dir / safe)  # save_localはディレクトリを受け取る
+        
+        # S3 が設定されていれば staging にアップロード → current へ昇格
+        if os.getenv("VECTORSTORE_S3_BUCKET"):
+            try:
+                from backend.rag_core_s3 import upload_to_staging, promote_staging_to_current
+                staging = upload_to_staging(str(out_dir / safe))
+                promote_staging_to_current(staging)
+                log.info("Vectorstore promoted to S3 current")
+            except Exception as e:
+                log.warning(f"S3 promote failed after rebuild: {e}")
     return vs

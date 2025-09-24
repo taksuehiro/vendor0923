@@ -9,6 +9,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_core.documents import Document
+from .rag_core_s3 import exists_current, download_current_to, upload_to_staging, promote_staging_to_current
 
 # 環境変数
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -24,6 +25,7 @@ class VendorRAG:
 
         self.embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
         self.vs: FAISS | None = None
+        self.vectorstore_source: str = "unknown"
 
     # 永続パス
     def _index_dir(self) -> Path:
@@ -32,37 +34,36 @@ class VendorRAG:
     def _exists(self) -> bool:
         p = self._index_dir()
         return (p / "index.faiss").exists() and (p / "index.pkl").exists()
+    
+    def _local_exists(self) -> bool:
+        return self._exists()
 
     def load_or_build(self) -> None:
         VECTOR_DIR.mkdir(parents=True, exist_ok=True)
         
-        # ファイル更新チェック
-        should_rebuild = False
-        if self._exists():
-            # 既存インデックスの更新日時とデータファイルの更新日時を比較
-            index_time = max(
-                (self._index_dir() / "index.faiss").stat().st_mtime,
-                (self._index_dir() / "index.pkl").stat().st_mtime
-            )
-            if DATA_PATH.exists():
-                data_time = DATA_PATH.stat().st_mtime
-                if data_time > index_time:
-                    should_rebuild = True
-                    print(f"📊 データファイルが更新されました。ベクトルストアを再構築します...")
-            else:
-                should_rebuild = True
-        else:
-            should_rebuild = True
-            print(f"📊 ベクトルストアが見つかりません。新規構築します...")
+        # 1) まず S3 current を優先ダウンロード → ローカルに配置
+        try:
+            if os.getenv("VECTORSTORE_S3_BUCKET") and exists_current():
+                print(f"📊 S3 current からベクトルストアをダウンロード中...")
+                download_current_to(str(self._index_dir()))
+                print(f"📊 S3 current からダウンロード完了: {self._index_dir()}")
+        except Exception as e:
+            print(f"⚠️  S3 current load skipped: {e}")
 
-        if not should_rebuild:
+        # 2) ローカルVECTOR_DIRに既存があれば読み込み
+        if self._local_exists():
             print(f"📊 既存のベクトルストアを読み込みました: {self._index_dir()}")
             self.vs = FAISS.load_local(
                 str(self._index_dir()),
                 self.embeddings,
                 allow_dangerous_deserialization=True,
             )
+            self.vectorstore_source = "S3/current" if os.getenv("VECTORSTORE_S3_BUCKET") else "local-cache"
             return
+
+        # 3) なければ vendors.json を見て再構築（従来通り）
+        should_rebuild = True
+        print(f"📊 ベクトルストアが見つかりません。新規構築します...")
 
         # データ読み込み（最低限のスキーマ: id, name, description, status, category）
         docs: List[Document] = []
@@ -104,6 +105,19 @@ class VendorRAG:
         self.vs = FAISS.from_documents(docs, self.embeddings, docstore=InMemoryDocstore())
         self.vs.save_local(str(self._index_dir()))
         print(f"📊 ベクトルストアを保存しました: {self._index_dir()}")
+        
+        # 3.1) S3 が設定されていれば staging にアップロード → current へ昇格
+        if os.getenv("VECTORSTORE_S3_BUCKET"):
+            try:
+                staging = upload_to_staging(str(self._index_dir()))
+                promote_staging_to_current(staging)
+                self.vectorstore_source = "rebuilt->S3/current"
+                print(f"📊 ベクトルストアをS3 currentに昇格しました")
+            except Exception as e:
+                print(f"⚠️  S3 promote failed (using rebuilt local): {e}")
+                self.vectorstore_source = "rebuilt"
+        else:
+            self.vectorstore_source = "rebuilt"
 
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         if self.vs is None:
