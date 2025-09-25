@@ -17,15 +17,17 @@ from rag_core import search_vendors, get_rag  # ← 追加
 
 app = FastAPI(title="Vendor RAG API", version="1.0.0")
 
-# CORS: 環境変数 ALLOWED_ORIGINS にカンマ区切りで指定（ローカル & Amplify を両方許可）
-allowed = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+# Amplify フロントエンドの URL を許可
+origins = [
+    "https://main.dcs5uerijxlhh.amplifyapp.com",  # Amplify の URL
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in allowed if o.strip()],
+    allow_origins=origins,        # 許可するオリジン
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],          # 例: ["POST"] だけでもOK
+    allow_headers=["*"],          # Authorization ヘッダなど通す場合は "*"
 )
 
 # データモデル
