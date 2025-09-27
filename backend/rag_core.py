@@ -9,7 +9,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_core.documents import Document
-from rag_core_s3 import exists_current, download_current_to, upload_to_staging, promote_staging_to_current
+from backend.rag_core_s3 import exists_current, download_current_to, upload_to_staging, promote_staging_to_current
 
 # 環境変数
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
