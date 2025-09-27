@@ -3,13 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins = [
-    "https://main.dcs5uerijxlhh.amplifyapp.com"
-]
-
+# CORS設定 - まずは全オリジンを許可して動作確認
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # 本番環境では Amplify ドメインに絞るのが望ましい
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
