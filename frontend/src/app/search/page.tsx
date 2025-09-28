@@ -20,8 +20,9 @@ export default function SearchPage() {
       } else {
         setHits(hits);
       }
-    } catch (e: any) {
-      setErrorMsg(e?.message ?? "検索中に例外が発生しました");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "検索中に例外が発生しました";
+      setErrorMsg(message);
       setHits([]);
     } finally {
       setLoading(false);

@@ -2,35 +2,62 @@
 export type SearchHit = {
   id: string;
   title: string;
-  score?: number;
-  snippet?: string;
-  // 必要なら他のフィールドも追加
+  score: number;
+  snippet: string;
 };
 
-export type SearchResponse = {
-  status: "ok" | "error";
-  hits: SearchHit[];
-  raw: any; // デバッグ用に素のレスポンスも返す
-};
+type Metadata = Record<string, unknown>;
+type ApiSuccess = { hits: SearchHit[]; metadata?: Metadata };
+type ApiEnvelope = { data?: unknown } & Record<string, unknown>;
 
-export async function searchApi(
-  body: Record<string, any>,
-  base = process.env.NEXT_PUBLIC_API_BASE!
-): Promise<SearchResponse> {
-  const res = await fetch(`${base}/search`, {
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === "object" && !Array.isArray(v);
+}
+function isHit(v: unknown): v is SearchHit {
+  return (
+    isRecord(v) &&
+    typeof v.id === "string" &&
+    typeof v.title === "string" &&
+    typeof v.score === "number" &&
+    typeof v.snippet === "string"
+  );
+}
+function extractHits(obj: unknown): SearchHit[] {
+  if (isRecord(obj) && Array.isArray((obj as ApiSuccess).hits) && (obj as ApiSuccess).hits.every(isHit)) {
+    return (obj as ApiSuccess).hits;
+  }
+  if (isRecord(obj) && isRecord((obj as ApiEnvelope).data)) {
+    const inner = (obj as ApiEnvelope).data!;
+    if (isRecord(inner) && Array.isArray((inner as ApiSuccess).hits) && (inner as ApiSuccess).hits.every(isHit)) {
+      return (inner as ApiSuccess).hits;
+    }
+  }
+  return [];
+}
+function extractMetadata(obj: unknown): Metadata | undefined {
+  if (isRecord(obj) && isRecord(obj.metadata)) return obj.metadata as Metadata;
+  if (isRecord(obj) && isRecord((obj as ApiEnvelope).data) && isRecord((obj as ApiEnvelope).data!.metadata)) {
+    return ((obj as ApiEnvelope).data as Record<string, unknown>).metadata as Metadata;
+  }
+  return undefined;
+}
+
+export async function searchApi(query: string, k = 10, use_mmr = false) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "omit", // CORSの想定と一致させる
-    body: JSON.stringify(body),
+    credentials: "omit",
+    body: JSON.stringify({ query, k, use_mmr }),
   });
 
-  // JSON化に失敗してもUIが死なないようにフォールバック
-  const json = await res.json().catch(() => ({} as any));
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
+    throw new Error(`Bad JSON (HTTP ${res.status})`);
+  }
 
-  const status: "ok" | "error" =
-    (json?.metadata?.status as any) ?? (res.ok ? "ok" : "error");
-
-  const hits: SearchHit[] = Array.isArray(json?.hits) ? json.hits : [];
-
-  return { status, hits, raw: json };
+  const hits = extractHits(json);
+  const metadata = extractMetadata(json);
+  return { httpStatus: res.status, hits, metadata };
 }
