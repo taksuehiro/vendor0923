@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 import { searchApi } from "@/lib/fetcher";
-import type { SearchHit, SearchResponse } from "@/types";
+import type { SearchHit, Metadata } from "@/lib/types";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
-  const [meta, setMeta] = useState<SearchResponse["metadata"]>(undefined);
+  const [meta, setMeta] = useState<Metadata | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
@@ -14,9 +14,9 @@ export default function SearchPage() {
     setLoading(true);
     setError("");
     try {
-      const res: SearchResponse = await searchApi({ query, k: 5, use_mmr: false });
-      setHits(res.hits as SearchHit[]);
-      setMeta(res.metadata);
+      const res = await searchApi(query, 5, false);
+      setHits(res.hits);
+      setMeta(res.meta);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

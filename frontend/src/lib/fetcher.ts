@@ -1,57 +1,38 @@
-import { SearchResponse } from "@/types";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
-if (!API_BASE) {
-  // 早期に気付けるように
-  // eslint-disable-next-line no-console
-  console.warn("NEXT_PUBLIC_API_BASE is not set");
-}
-
-async function parseJson<T>(res: Response): Promise<T> {
-  const text = await res.text();
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new Error(`Invalid JSON response: ${text.slice(0, 200)}`);
-  }
-}
-
-export async function searchApi(payload: {
-  query: string;
-  k?: number;
-  use_mmr?: boolean;
-}): Promise<SearchResponse> {
-  const url = `${API_BASE.replace(/\/$/, "")}/search`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    // CORSでCookieを使わない前提
+export async function getJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, {
     credentials: "omit",
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers || {}),
+    },
   });
-
-  // 200系以外は本文メッセージを拾って投げ直す
+  // Always try JSON; if fails, throw with body text
+  const text = await res.text();
+  let json: unknown;
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Invalid JSON: ${text?.slice(0, 200)}`);
+  }
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`API ${res.status}: ${body || res.statusText}`);
+    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text?.slice(0, 200)}`);
   }
+  return json as T;
+}
 
-  // モック/本番 両対応
-  const json = await parseJson<unknown>(res);
+import type { ApiResponse, SearchHit } from "@/lib/types";
 
-  const hits =
-    (json as any)?.hits ??
-    (json as any)?.data?.hits ??
-    [];
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
-  const metadata =
-    (json as any)?.metadata ??
-    (json as any)?.data?.metadata ??
-    undefined;
-
-  if (!Array.isArray(hits)) {
-    throw new Error("Response format error: hits is not an array");
-  }
-
-  return { hits, metadata } as SearchResponse;
+export async function searchApi(query: string, k = 3, use_mmr = false) {
+  const body = JSON.stringify({ query, k, use_mmr });
+  const r = await getJson<ApiResponse<SearchHit>>(`${BASE}/search`, {
+    method: "POST",
+    body,
+  });
+  // Defensive parse: accept {hits} or {data:{hits}}
+  const hits = (r.hits ?? r.data?.hits) ?? [];
+  const meta = r.metadata;
+  return { hits, meta };
 }

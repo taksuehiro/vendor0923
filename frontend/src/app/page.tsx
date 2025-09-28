@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KBStats, Vendor } from "@/types";
-import type { SearchHit } from "@/types";
+import type { SearchHit, Metadata } from "@/lib/types";
 import { searchApi } from "@/lib/fetcher";
 
 // 型定義
@@ -82,7 +82,7 @@ export default function MainPage() {
     setSearchLoading(true);
     try {
       // RAG API呼び出し
-      const { hits } = await searchApi({ query, k: 8, use_mmr: false }).catch(() => ({ hits: [] as SearchHit[] }));
+      const { hits } = await searchApi(query, 8, false).catch(() => ({ hits: [] as SearchHit[] }));
 
       if (!hits.length) {
         throw new Error("検索結果がありません");
