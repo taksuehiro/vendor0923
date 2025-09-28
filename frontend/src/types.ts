@@ -40,6 +40,7 @@ export type SearchResponse = {
 export interface SearchResult {
   id: string;
   title: string;
+  snippet: string;
   content: string;
   score?: number;
   url?: string;
