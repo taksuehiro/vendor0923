@@ -1,26 +1,28 @@
 "use client";
 import { useState } from "react";
-import type { SearchHit, Metadata } from "@/lib/types";
 import { searchApi } from "@/lib/fetcher";
+import type { SearchHit, SearchResponse } from "@/types";
 
 export default function SearchPage() {
+  const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
-  const [meta, setMeta] = useState<Metadata | undefined>(undefined);
-  const [q, setQ] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [meta, setMeta] = useState<SearchResponse["metadata"]>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  async function onSearch() {
-    setError(null);
+  const onSearch = async () => {
+    setLoading(true);
+    setError("");
     try {
-      const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
-      const res = await searchApi(base, { query: q, k: 3, use_mmr: false });
-      setHits(res.hits);
-      setMeta(res.meta);
+      const res: SearchResponse = await searchApi({ query, k: 5, use_mmr: false });
+      setHits(res.hits as SearchHit[]);
+      setMeta(res.metadata);
     } catch (e) {
-      setHits([]);
-      setError(e instanceof Error ? e.message : "Error");
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <main className="p-4 space-y-4">
@@ -28,8 +30,8 @@ export default function SearchPage() {
       <input
         className="border rounded px-2 py-1 w-full max-w-xl"
         placeholder="検索クエリ"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
       />
       <button className="px-3 py-1 rounded bg-black text-white" onClick={onSearch}>
         検索

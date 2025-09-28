@@ -1,31 +1,57 @@
-import type { SearchResponse } from "./types";
+import { SearchResponse } from "@/types";
 
-export async function postJSON<T = unknown>(url: string, body: unknown, init?: RequestInit): Promise<T> {
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
+if (!API_BASE) {
+  // 早期に気付けるように
+  // eslint-disable-next-line no-console
+  console.warn("NEXT_PUBLIC_API_BASE is not set");
+}
+
+async function parseJson<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`Invalid JSON response: ${text.slice(0, 200)}`);
+  }
+}
+
+export async function searchApi(payload: {
+  query: string;
+  k?: number;
+  use_mmr?: boolean;
+}): Promise<SearchResponse> {
+  const url = `${API_BASE.replace(/\/$/, "")}/search`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    // CORSでCookieを使わない前提
     credentials: "omit",
-    body: JSON.stringify(body ?? {}),
-    ...init,
   });
-  // 2xx 以外は例外
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
-  }
-  const json = (await res.json().catch(() => ({}))) as unknown;
-  // defensive parse
-  const obj = typeof json === "object" && json ? (json as Record<string, unknown>) : {};
-  const data = (obj["data"] ?? obj) as Record<string, unknown>;
-  return data as T;
-}
 
-export async function searchApi(
-  base: string,
-  payload: { query: string; k?: number; use_mmr?: boolean }
-) {
-  const url = `${base.replace(/\/$/, "")}/search`;
-  const data = await postJSON<SearchResponse>(url, payload);
-  const hits = Array.isArray(data?.hits) ? data.hits : [];
-  return { hits, meta: data?.metadata, raw: data };
+  // 200系以外は本文メッセージを拾って投げ直す
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${body || res.statusText}`);
+  }
+
+  // モック/本番 両対応
+  const json = await parseJson<unknown>(res);
+
+  const hits =
+    (json as any)?.hits ??
+    (json as any)?.data?.hits ??
+    [];
+
+  const metadata =
+    (json as any)?.metadata ??
+    (json as any)?.data?.metadata ??
+    undefined;
+
+  if (!Array.isArray(hits)) {
+    throw new Error("Response format error: hits is not an array");
+  }
+
+  return { hits, metadata } as SearchResponse;
 }
