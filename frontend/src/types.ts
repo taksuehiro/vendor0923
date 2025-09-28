@@ -12,6 +12,15 @@ export type Vendor = {
   category?: string[];
   status?: VendorStatus;
   score?: number;
+  // 追加フィールド
+  listed?: boolean;
+  type?: string;
+  meta?: {
+    url?: string;
+    employees_band?: string;
+    investors?: string[];
+    [key: string]: any;
+  };
 };
 
 export type Facets = {
@@ -21,9 +30,18 @@ export type Facets = {
 };
 
 export type KBStats = {
-  documents: number;
-  vendors: number;
+  documents?: number;
+  vendors?: number;
   lastIndexedAt?: string;
+  // 追加フィールド
+  totalVendors: number;
+  missingCount: number;
+  byFormat: Record<string, number>;
+  byStatus: Record<string, number>;
+  topCategories: Array<{
+    name: string;
+    count: number;
+  }>;
 };
 
 // Re-export API types so imports can use either "@/types" or "@/lib/types".
@@ -41,12 +59,32 @@ export interface SearchResult {
   id: string;
   title: string;
   snippet: string;
-  content: string;
+  content?: string;
   score?: number;
   url?: string;
   status?: string;
   category?: string[];
   vendor_id?: string;
+  // metadataフィールドの型定義を追加
+  metadata?: {
+    status?: string;
+    category?: string;
+    [key: string]: any;
+  };
+}
+
+// VendorWithDetails interface for browse page
+export interface VendorWithDetails extends Vendor {
+  url?: string;
+  employees_band?: string;
+  investors?: string[];
+  is_scratch?: boolean;
+  deployment?: string;
+  price_range?: string;
+  industries?: string[];
+  departments?: string[];
+  listed?: boolean;
+  type?: string;
 }
 
 // Status labels for display

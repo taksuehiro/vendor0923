@@ -25,7 +25,7 @@ export default function KBPage() {
           snippet: "AI・機械学習を活用したスクラッチ開発サービス",
           score: 0.95,
           metadata: {
-            status: "面談済",
+            status: "ok",
             category: "スクラッチ開発"
           }
         },
@@ -35,7 +35,7 @@ export default function KBPage() {
           snippet: "クラウドインフラ構築・運用支援",
           score: 0.87,
           metadata: {
-            status: "未面談",
+            status: "unknown",
             category: "SaaS"
           }
         }
@@ -71,7 +71,7 @@ export default function KBPage() {
     {
       id: "vendor_1",
       name: "LiberCraft",
-      status: "面談済",
+      status: "ok",
       listed: false,
       type: "スクラッチ",
       category: ["スクラッチ"],
@@ -84,7 +84,7 @@ export default function KBPage() {
     {
       id: "vendor_2",
       name: "TechCorp",
-      status: "未面談",
+      status: "unknown",
       listed: true,
       type: "SaaS",
       category: ["SaaS"],
@@ -96,7 +96,7 @@ export default function KBPage() {
     {
       id: "vendor_3",
       name: "DataSoft",
-      status: "面談済",
+      status: "ok",
       listed: false,
       type: "SI",
       category: ["SI"],
@@ -234,7 +234,7 @@ export default function KBPage() {
                           {result.title}
                         </h4>
                         <div className="text-sm text-gray-500">
-                          スコア: {(result.score * 100).toFixed(1)}%
+                          スコア: {((result.score || 0) * 100).toFixed(1)}%
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
