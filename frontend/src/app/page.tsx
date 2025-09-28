@@ -81,7 +81,7 @@ export default function MainPage() {
     setSearchLoading(true);
     try {
       // RAG API呼び出し
-      const { status, hits, raw } = await searchApi({
+      const { status, hits } = await searchApi({
         query,
         k: 8,
         use_mmr: false,

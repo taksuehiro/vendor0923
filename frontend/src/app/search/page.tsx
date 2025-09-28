@@ -13,15 +13,13 @@ export default function SearchPage() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const { status, hits, raw } = await searchApi({ query, k: 3, use_mmr: false });
+      const { status, hits } = await searchApi({ query, k: 3, use_mmr: false });
       if (status !== "ok") {
         setErrorMsg("検索中にエラーが発生しました（status=error）");
         setHits([]);
       } else {
         setHits(hits);
       }
-      // 必要なら raw をコンソールに
-      // console.debug("raw response", raw);
     } catch (e: any) {
       setErrorMsg(e?.message ?? "検索中に例外が発生しました");
       setHits([]);
