@@ -86,7 +86,10 @@ pip install -r requirements.txt
 cp env.example .env
 # .envファイルを編集してAPIキーを設定
 
-# サーバー起動
+# サーバー起動（本番相当）
+uvicorn main:app --host 0.0.0.0 --port 8080
+
+# 開発用（リロード有効）
 uvicorn main:app --reload --port 8000
 ```
 
@@ -109,8 +112,38 @@ npm run dev
 ## 🌐 アクセス
 
 - **フロントエンド**: http://localhost:3000
-- **バックエンドAPI**: http://127.0.0.1:8000
-- **API仕様書**: http://127.0.0.1:8000/docs
+- **バックエンドAPI**: http://127.0.0.1:8080
+- **API仕様書**: http://127.0.0.1:8080/docs
+
+## 🧪 テスト用コマンド
+
+### 正常系テスト
+```bash
+# 検索API（正常）
+curl -i -X POST http://localhost:8080/search \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"ping"}'
+
+# ヘルスチェック
+curl -i http://localhost:8080/health
+```
+
+### 異常系テスト
+```bash
+# 空ボディ → 422
+curl -i -X POST http://localhost:8080/search \
+  -H 'Content-Type: application/json'
+
+# 空JSON {} → 422（min_length=1が効く）
+curl -i -X POST http://localhost:8080/search \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+
+# デバッグ用エコー
+curl -i -X POST http://localhost:8080/debug/echo \
+  -H 'Content-Type: application/json' \
+  -d '{"test":"data"}'
+```
 
 ## 🔧 環境変数
 

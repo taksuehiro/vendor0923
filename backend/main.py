@@ -24,40 +24,26 @@ async def add_trace_and_log(request: Request, call_next):
     request.state.trace_id = trace_id
     body = await request.body()
     log.info(f"[REQ] {trace_id} {request.method} {request.url.path} "
-             f"hdrs={{origin:{request.headers.get('origin')}, content-type:{request.headers.get('content-type')}}} "
-             f"body={body[:2048]!r}")
+             f"origin={request.headers.get('origin')} ct={request.headers.get('content-type')} "
+             f"body={body[:1024]!r}")
     try:
         resp = await call_next(request)
-    finally:
-        pass
+    except Exception:
+        log.exception(f"[ERR] {trace_id} unhandled")
+        return JSONResponse(
+            status_code=500,
+            content={"ok": False, "error": "internal_error", "trace_id": trace_id},
+        )
     resp.headers["x-trace-id"] = trace_id
     log.info(f"[RES] {trace_id} status={resp.status_code}")
     return resp
-
-@app.exception_handler(Exception)
-async def unhandled(request: Request, exc: Exception):
-    trace_id = getattr(request.state, "trace_id", "-")
-    log.exception(f"[ERR] {trace_id} unhandled")
-    return JSONResponse(
-        status_code=500,
-        content={"ok": False, "error": "internal_error", "trace_id": trace_id},
-    )
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-@app.post("/auth/verify")
-def verify(payload: dict):
-    if payload.get("email") == "demo@example.com" and payload.get("password") == "secret":
-        return {"id": 1, "email": payload["email"], "org_id": 1}
-    raise HTTPException(status_code=401, detail="Invalid credentials")
-
 @app.post("/search", response_model=SearchRes)
-def search(req: SearchReq, request: Request):
-    if req.query == "__ERROR_TEST__":
-        # 正しく 400 を返す（200にエラーを埋め込まない）
-        raise HTTPException(status_code=400, detail="bad_query")
+def search(req: SearchReq):
     return SearchRes(
         ok=True,
         hits=[
@@ -66,9 +52,8 @@ def search(req: SearchReq, request: Request):
         ],
     )
 
-# 契約のズレ可視化用：そのまま返すエコー
 @app.post("/debug/echo")
 async def echo(request: Request):
-    body = await request.json()
     headers = {k: request.headers.get(k) for k in ["origin", "content-type", "x-trace-id"]}
-    return {"method": request.method, "path": request.url.path, "headers": headers, "body": body}
+    body = await request.json()
+    return {"method": request.method, "path": str(request.url.path), "headers": headers, "body": body}
