@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Vendor, Facets } from "@/types";
+import type { Vendor, Facets, VendorStatus } from "@/types";
 import { STATUS_LABEL } from "@/types";
 
 interface VendorWithDetails extends Vendor {
@@ -19,6 +19,8 @@ interface VendorWithDetails extends Vendor {
   price_range?: string;
   industries?: string[];
   departments?: string[];
+  listed?: boolean;
+  type?: string;
 }
 
 interface FacetsWithCounts {
@@ -235,7 +237,7 @@ export default function BrowsePage() {
                       <div key={status} className="flex items-center space-x-2">
                         <Checkbox
                           id={`status-${status}`}
-                          checked={selectedFilters.status?.includes(status) || false}
+                          checked={selectedFilters.status?.includes(status as VendorStatus) || false}
                           onCheckedChange={(checked: boolean) => handleFilterChange("status", status, checked)}
                         />
                         <Label htmlFor={`status-${status}`} className="text-sm">

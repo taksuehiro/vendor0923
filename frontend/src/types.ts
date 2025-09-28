@@ -17,6 +17,7 @@ export type Vendor = {
 export type Facets = {
   category?: string[];
   status?: VendorStatus[];
+  type?: string[];
 };
 
 export type KBStats = {
