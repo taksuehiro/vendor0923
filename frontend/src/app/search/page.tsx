@@ -1,69 +1,52 @@
 "use client";
-
 import { useState } from "react";
-import { searchApi, type SearchHit } from "@/lib/fetcher";
+import type { SearchHit, Metadata } from "@/lib/types";
+import { searchApi } from "@/lib/fetcher";
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [meta, setMeta] = useState<Metadata | undefined>(undefined);
+  const [q, setQ] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const onSearch = async () => {
-    setLoading(true);
-    setErrorMsg(null);
+  async function onSearch() {
+    setError(null);
     try {
-      const { httpStatus, hits } = await searchApi(query, 3, false);
-      if (httpStatus !== 200) {
-        setErrorMsg("検索中にエラーが発生しました（HTTP " + httpStatus + "）");
-        setHits([]);
-      } else {
-        setHits(hits);
-      }
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "検索中に例外が発生しました";
-      setErrorMsg(message);
+      const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+      const res = await searchApi(base, { query: q, k: 3, use_mmr: false });
+      setHits(res.hits);
+      setMeta(res.meta);
+    } catch (e) {
       setHits([]);
-    } finally {
-      setLoading(false);
+      setError(e instanceof Error ? e.message : "Error");
     }
-  };
+  }
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex gap-2">
-        <input
-          className="border rounded px-3 py-2 flex-1"
-          placeholder="検索クエリ"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button
-          className="px-4 py-2 rounded bg-black text-white disabled:opacity-50"
-          onClick={onSearch}
-          disabled={loading}
-        >
-          {loading ? "検索中..." : "検索"}
-        </button>
-      </div>
-
-      {errorMsg && (
-        <div className="p-3 rounded border border-red-300 text-red-700 bg-red-50">
-          {errorMsg}
-        </div>
+    <main className="p-4 space-y-4">
+      <h1 className="text-xl font-bold">検索UI</h1>
+      <input
+        className="border rounded px-2 py-1 w-full max-w-xl"
+        placeholder="検索クエリ"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+      />
+      <button className="px-3 py-1 rounded bg-black text-white" onClick={onSearch}>
+        検索
+      </button>
+      {meta?.provider && (
+        <div className="text-xs opacity-60">provider: {meta.provider}</div>
       )}
-
-      <div className="space-y-2">
+      {error && (
+        <div className="text-red-600 text-sm">検索中にエラーが発生しました: {error}</div>
+      )}
+      <ol className="space-y-2 list-decimal pl-6">
         {hits.map((h) => (
-          <div key={h.id} className="p-3 rounded border">
-            <div className="font-medium">{h.title}</div>
-            {h.snippet && <div className="text-sm text-gray-600">{h.snippet}</div>}
-          </div>
+          <li key={h.id}>
+            <b>{h.title}</b>（スコア: {h.score}）<div className="opacity-70">{h.snippet}</div>
+          </li>
         ))}
-        {!errorMsg && !loading && hits.length === 0 && (
-          <div className="text-gray-500 text-sm">結果はありません</div>
-        )}
-      </div>
-    </div>
+      </ol>
+    </main>
   );
 }
