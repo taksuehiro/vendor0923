@@ -35,18 +35,44 @@ export interface SearchResponse {
 }
 
 export async function searchVendors(request: SearchRequest): Promise<SearchResponse> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
   
   try {
-    const response = await fetchJson<SearchResponse>(`${baseUrl}/search`, {
+    const response = await fetch(`${baseUrl}/search`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "omit",
       body: JSON.stringify(request),
     });
     
-    return response;
+    // レスポンスの存在確認
+    if (!response) {
+      throw new Error('レスポンスが取得できませんでした');
+    }
+    
+    // HTTPステータスコードの確認
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+    }
+    
+    const json = await response.json();
+    
+    // 防御的パース: json.hits または json.data.hits のどちらでも動く
+    const hits = Array.isArray(json?.hits)
+      ? json.hits
+      : Array.isArray(json?.data?.hits)
+        ? json.data.hits
+        : [];
+    
+    // 最終的な配列の検証
+    if (!Array.isArray(hits)) {
+      throw new Error("Unexpected response shape");
+    }
+    
+    return { hits };
   } catch (error) {
     console.error("Search API error:", error);
     throw new Error(`検索API呼び出しに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);

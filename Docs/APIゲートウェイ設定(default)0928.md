@@ -291,3 +291,48 @@ CORSは二段構えでOK：APIGW（プレフライト安定）＋FastAPI（本�
 フロント fetch は credentials: 'omit'（現状のCORSと整合）
 
 デプロイは ECRタグPIN → taskdef登録 → update-service --force-new-deployment の3点セット
+
+
+
+
+
+200になったあとに、CORSエラーが再び起きてきた件について
+
+
+いま起きていたこと（超要約）
+
+原因：ALB の片系 (ap-northeast-1c) サブネットが Public ルートテーブルに関連付いていなかったため、そのノードに当たるとタイムアウト。
+
+対処：subnet-0fad2d28b04a7e2b5 (1c) を Public RT（IGW ルート有）に明示関連付け。以後、両 IP 宛てでも /health・/search が 200。
+
+アプリ側：ECS タスク定義を ECR ダイジェスト固定（:22） で更新。ALB 直＆APIGW 経由ともモック JSON が返る状態を確認。
+
+後片付け＆おすすめ設定（軽く）
+
+CORS を最小化（必要に応じて戻す）
+
+APIGW: AllowOrigins を Amplify の本番ドメインに限定
+
+アプリ（FastAPI）: allow_origins も同様に限定、allow_credentials は要件に応じて
+
+APIGW アクセスログ：すでに有効化済みなので、維持でOK（便利なのでこのまま推奨）。
+
+監視
+
+ALB Target Health: 1a/1c とも healthy 監視（CloudWatch アラーム化おすすめ）
+
+APIGW 5XXError 率、ECS タスク CPU/Memory、ALB HTTPCode_ELB_5XX など
+
+ネットワーク恒久化
+
+ALB のサブネットは Public × 2AZ（1a/1c） 固定
+
+その 両サブネットが IGW ルートの RT を参照していることをインフラ定義（IaC）でも明示
+
+デプロイ運用メモ
+
+アプリを ECR に push → 付与タグを ECR で確認
+
+重要なリリースは @sha256 でピン留め → register-task-definition → update-service --force-new-deployment
+
+収束待ち：aws ecs wait services-stable → 実機確認（ALB直 / APIGW）

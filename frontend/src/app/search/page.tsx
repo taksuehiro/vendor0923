@@ -28,9 +28,12 @@ export default function SearchPage() {
 
       setResults(response.hits);
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error("Search error:", error);
       // エラー時のフォールバック
       setResults([]);
+      // エラーメッセージを表示（UIに追加する場合はここで状態管理）
+      alert(`検索中にエラー: ${msg}`);
     } finally {
       setLoading(false);
     }

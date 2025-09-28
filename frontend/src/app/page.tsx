@@ -105,10 +105,11 @@ export default function MainPage() {
 
       setSearchResult(searchResult);
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error("検索エラー:", error);
       // エラー時のフォールバック
       setSearchResult({
-        result: `検索中にエラーが発生しました: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        result: `検索中にエラーが発生しました: ${msg}`,
         source_documents: []
       });
     } finally {

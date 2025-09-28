@@ -32,8 +32,26 @@ def verify(payload: dict):
 def search(req: SearchReq):
     q = req.query
     return {"hits": [
-        {"id": "v001", "title": f"Result for {q}", "score": 0.92, "snippet": "mock snippet 1"},
-        {"id": "v002", "title": f"Result for {q}", "score": 0.81, "snippet": "mock snippet 2"},
+        {
+            "id": "v001", 
+            "title": f"Result for {q}", 
+            "score": 0.92, 
+            "snippet": "mock snippet 1",
+            "metadata": {
+                "status": "面談済",
+                "category": "スクラッチ"
+            }
+        },
+        {
+            "id": "v002", 
+            "title": f"Result for {q}", 
+            "score": 0.81, 
+            "snippet": "mock snippet 2",
+            "metadata": {
+                "status": "未面談",
+                "category": "SaaS"
+            }
+        },
     ]}
 
 # オプション：ビルド識別用
