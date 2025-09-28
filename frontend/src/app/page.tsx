@@ -81,13 +81,9 @@ export default function MainPage() {
     setSearchLoading(true);
     try {
       // RAG API呼び出し
-      const { status, hits } = await searchApi({
-        query,
-        k: 8,
-        use_mmr: false,
-      });
+      const { httpStatus, hits } = await searchApi(query, 8, false);
 
-      if (status !== "ok") {
+      if (httpStatus !== 200) {
         throw new Error("検索APIがエラーを返しました");
       }
 

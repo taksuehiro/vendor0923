@@ -36,8 +36,9 @@ function extractHits(obj: unknown): SearchHit[] {
 }
 function extractMetadata(obj: unknown): Metadata | undefined {
   if (isRecord(obj) && isRecord(obj.metadata)) return obj.metadata as Metadata;
-  if (isRecord(obj) && isRecord((obj as ApiEnvelope).data) && isRecord((obj as ApiEnvelope).data!.metadata)) {
-    return ((obj as ApiEnvelope).data as Record<string, unknown>).metadata as Metadata;
+  if (isRecord(obj) && isRecord((obj as ApiEnvelope).data)) {
+    const data = (obj as ApiEnvelope).data as Record<string, unknown>;
+    if (isRecord(data.metadata)) return data.metadata as Metadata;
   }
   return undefined;
 }

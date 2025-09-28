@@ -13,9 +13,9 @@ export default function SearchPage() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const { status, hits } = await searchApi({ query, k: 3, use_mmr: false });
-      if (status !== "ok") {
-        setErrorMsg("検索中にエラーが発生しました（status=error）");
+      const { httpStatus, hits } = await searchApi(query, 3, false);
+      if (httpStatus !== 200) {
+        setErrorMsg("検索中にエラーが発生しました（HTTP " + httpStatus + "）");
         setHits([]);
       } else {
         setHits(hits);
