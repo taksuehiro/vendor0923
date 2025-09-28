@@ -33,8 +33,12 @@ export default function SearchPage() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <button className="px-3 py-1 rounded bg-black text-white" onClick={onSearch}>
-        検索
+      <button 
+        className="px-3 py-1 rounded bg-black text-white disabled:opacity-50" 
+        onClick={onSearch}
+        disabled={loading}
+      >
+        {loading ? "検索中…" : "検索"}
       </button>
       {meta?.provider && (
         <div className="text-xs opacity-60">provider: {meta.provider}</div>

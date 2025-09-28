@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KBStats, Vendor } from "@/types";
-import type { SearchHit, Metadata } from "@/types";
+import type { SearchHit } from "@/types";
 import { searchApi } from "@/lib/fetcher";
 
 // 型定義

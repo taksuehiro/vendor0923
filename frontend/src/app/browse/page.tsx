@@ -45,7 +45,7 @@ export default function BrowsePage() {
     {
       id: "vendor_1",
       name: "LiberCraft",
-      status: "面談済",
+      status: "ok",
       listed: false,
       type: "スクラッチ",
       category: ["スクラッチ"],
@@ -76,7 +76,7 @@ export default function BrowsePage() {
     {
       id: "vendor_3",
       name: "DataSoft",
-      status: "面談済",
+      status: "ok",
       listed: false,
       type: "SI",
       category: ["SI"],
@@ -409,11 +409,11 @@ export default function BrowsePage() {
                         <div>
                           <h3 className="text-lg font-semibold">{vendor.name}</h3>
                           <p className="text-sm text-gray-600">
-                            {vendor.status} / {vendor.listed ? "上場" : "未上場"} / {vendor.type}
+                            {STATUS_LABEL[vendor.status ?? "unknown"]} / {vendor.listed ? "上場" : "未上場"} / {vendor.type}
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <Badge variant="secondary">{vendor.status}</Badge>
+                          <Badge variant="secondary">{STATUS_LABEL[vendor.status ?? "unknown"]}</Badge>
                           <Badge variant="outline">{vendor.type}</Badge>
                           {vendor.listed && <Badge variant="default">上場</Badge>}
                         </div>
