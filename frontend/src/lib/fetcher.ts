@@ -1,23 +1,43 @@
-import type { SearchResponse, SearchHit, Metadata } from "@/types";
+import { SearchResponse, SearchHit, Metadata } from "@/types";
 
-export async function searchApi(q: string): Promise<SearchResponse> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/search`, {
+type SearchBody = { query: string; k?: number; use_mmr?: boolean };
+
+export async function searchApi(body: SearchBody): Promise<SearchResponse> {
+  const base = process.env.NEXT_PUBLIC_API_BASE!;
+  const res = await fetch(`${base}/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "omit",
-    body: JSON.stringify({ query: q, k: 10, use_mmr: false }),
+    body: JSON.stringify(body),
   });
-
-  // HTTPはOKでも中身が壊れてる可能性に備える
-  let json: any = null;
-  try {
-    json = await res.json();
-  } catch {
-    return { hits: [], metadata: { source: "parse_error" } };
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status} ${res.statusText}: ${text.slice(0,200)}`);
   }
 
-  const hits: SearchHit[] = json?.hits ?? json?.data?.hits ?? [];
-  const metadata: Metadata | undefined = json?.metadata ?? json?.data?.metadata ?? undefined;
+  const json = (await res.json()) as unknown;
+  const root = (json ?? {}) as Record<string, unknown>;
+  const data = (root.data ?? {}) as Record<string, unknown>;
 
+  const rawHits =
+    Array.isArray(root.hits)
+      ? (root.hits as unknown[])
+      : Array.isArray(data.hits as unknown[])
+      ? ((data.hits as unknown[]))
+      : [];
+
+  const hits: SearchHit[] = rawHits.map((h) => {
+    const r = (h ?? {}) as Record<string, unknown>;
+    return {
+      id: String(r.id ?? ""),
+      title: String(r.title ?? ""),
+      score: typeof r.score === "number" ? r.score : 0,
+      snippet: typeof r.snippet === "string" ? r.snippet : "",
+      url: typeof r.url === "string" ? r.url : undefined,
+      status: typeof r.status === "string" ? r.status : undefined,
+    };
+  });
+
+  const metadata = (root.metadata ?? data.metadata) as Metadata | undefined;
   return { hits, metadata };
 }

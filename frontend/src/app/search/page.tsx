@@ -14,7 +14,7 @@ export default function SearchPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await searchApi(query);
+      const res = await searchApi({ query });
       setHits(res.hits);
       setMeta(res.metadata);
     } catch (e) {

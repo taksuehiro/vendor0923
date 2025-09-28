@@ -82,7 +82,7 @@ export default function MainPage() {
     setSearchLoading(true);
     try {
       // RAG API呼び出し
-      const { hits } = await searchApi(query).catch(() => ({ hits: [] as SearchHit[] }));
+      const { hits } = await searchApi({ query }).catch(() => ({ hits: [] as SearchHit[] }));
 
       if (!hits.length) {
         throw new Error("検索結果がありません");
