@@ -24,4 +24,17 @@ export type KBStats = {
 };
 
 // Re-export API types so imports can use either "@/types" or "@/lib/types".
-export { type SearchHit, type Metadata, type ApiResponse } from "@/lib/types";
+export type { SearchHit, Metadata, ApiResponse } from "@/lib/types";
+
+// SearchResponse type for fetcher
+export type SearchResponse = {
+  hits: SearchHit[];
+  metadata?: Metadata;
+};
+
+// Status labels for display
+export const STATUS_LABEL: Record<"ok" | "error" | "unknown", string> = {
+  ok: "面談済",
+  error: "エラー",
+  unknown: "不明"
+};

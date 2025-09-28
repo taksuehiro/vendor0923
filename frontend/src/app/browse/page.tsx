@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Vendor, Facets } from "@/types";
+import { STATUS_LABEL } from "@/types";
 
 interface VendorWithDetails extends Vendor {
   url?: string;
