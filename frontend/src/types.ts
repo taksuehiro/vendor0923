@@ -3,18 +3,20 @@
  * Keep in sync with backend contracts as they evolve.
  */
 
+export type VendorStatus = "ok" | "error" | "unknown";
+
 export type Vendor = {
   id: string;
   name: string;
   // optional fields (UI can render even if undefined)
-  category?: string;
-  status?: "ok" | "error" | "unknown";
+  category?: string[];
+  status?: VendorStatus;
   score?: number;
 };
 
 export type Facets = {
-  categories?: string[];
-  statuses?: Array<"ok" | "error" | "unknown">;
+  category?: string[];
+  status?: VendorStatus[];
 };
 
 export type KBStats = {
@@ -24,7 +26,7 @@ export type KBStats = {
 };
 
 // Re-export API types so imports can use either "@/types" or "@/lib/types".
-export type { SearchHit, Metadata, ApiResponse } from "@/lib/types";
+export { type SearchHit, type Metadata, type ApiResponse } from "@/lib/types";
 
 // SearchResponse type for fetcher
 export type SearchResponse = {
@@ -33,7 +35,7 @@ export type SearchResponse = {
 };
 
 // Status labels for display
-export const STATUS_LABEL: Record<"ok" | "error" | "unknown", string> = {
+export const STATUS_LABEL: Record<VendorStatus, string> = {
   ok: "面談済",
   error: "エラー",
   unknown: "不明"

@@ -61,7 +61,7 @@ export default function BrowsePage() {
     {
       id: "vendor_2",
       name: "TechCorp",
-      status: "未面談",
+      status: "unknown",
       listed: true,
       type: "SaaS",
       category: ["SaaS"],
@@ -91,7 +91,7 @@ export default function BrowsePage() {
     {
       id: "vendor_4",
       name: "CloudTech",
-      status: "未面談",
+      status: "unknown",
       listed: true,
       type: "SaaS",
       category: ["SaaS"],
