@@ -1,80 +1,36 @@
-// src/lib/fetcher.ts
-export async function fetchJson<T>(
-  input: RequestInfo | URL,
-  init?: RequestInit
-): Promise<T> {
-  const res = await fetch(input, init);
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
-  }
-  // 型安全: 実体はランタイムで保証できないので T へアサート
-  return (await res.json()) as T;
-}
-
-// 検索API呼び出しの共通関数
-export interface SearchRequest {
-  query: string;
-  top_k: number;
-  mmr?: number;
-}
-
-export interface SearchResult {
+// frontend/src/lib/fetcher.ts
+export type SearchHit = {
   id: string;
   title: string;
-  score: number;
-  snippet: string;
-  metadata: {
-    status: string;
-    category: string;
-  };
-}
+  score?: number;
+  snippet?: string;
+  // 必要なら他のフィールドも追加
+};
 
-export interface SearchResponse {
-  hits: SearchResult[];
-}
+export type SearchResponse = {
+  status: "ok" | "error";
+  hits: SearchHit[];
+  raw: any; // デバッグ用に素のレスポンスも返す
+};
 
-export async function searchVendors(request: SearchRequest): Promise<SearchResponse> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
-  
-  try {
-    const response = await fetch(`${baseUrl}/search`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "omit",
-      body: JSON.stringify(request),
-    });
-    
-    // レスポンスの存在確認
-    if (!response) {
-      throw new Error('レスポンスが取得できませんでした');
-    }
-    
-    // HTTPステータスコードの確認
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-    }
-    
-    const json = await response.json();
-    
-    // 防御的パース: json.hits または json.data.hits のどちらでも動く
-    const hits = Array.isArray(json?.hits)
-      ? json.hits
-      : Array.isArray(json?.data?.hits)
-        ? json.data.hits
-        : [];
-    
-    // 最終的な配列の検証
-    if (!Array.isArray(hits)) {
-      throw new Error("Unexpected response shape");
-    }
-    
-    return { hits };
-  } catch (error) {
-    console.error("Search API error:", error);
-    throw new Error(`検索API呼び出しに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+export async function searchApi(
+  body: Record<string, any>,
+  base = process.env.NEXT_PUBLIC_API_BASE!
+): Promise<SearchResponse> {
+  const res = await fetch(`${base}/search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "omit", // CORSの想定と一致させる
+    body: JSON.stringify(body),
+  });
+
+  // JSON化に失敗してもUIが死なないようにフォールバック
+  const json = await res.json().catch(() => ({} as any));
+
+  const status: "ok" | "error" =
+    (json?.metadata?.status as any) ?? (res.ok ? "ok" : "error");
+
+  const hits: SearchHit[] = Array.isArray(json?.hits) ? json.hits : [];
+
+  return { status, hits, raw: json };
 }

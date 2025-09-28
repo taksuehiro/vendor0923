@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KBStats, Vendor } from "@/types";
-import { searchVendors, type SearchResponse, type SearchResult } from "@/lib/fetcher";
+import { searchApi, type SearchHit } from "@/lib/fetcher";
 
 // 型定義
 interface SearchResultData {
@@ -81,24 +81,28 @@ export default function MainPage() {
     setSearchLoading(true);
     try {
       // RAG API呼び出し
-      const response = await searchVendors({
+      const { status, hits, raw } = await searchApi({
         query,
-        top_k: 8,
-        mmr: 0.5,
+        k: 8,
+        use_mmr: false,
       });
 
-          // APIレスポンスをSearchResultData形式に変換
-          const searchResult: SearchResultData = {
-        result: response.hits.map(hit => 
-          `**${hit.title}** (スコア: ${(hit.score * 100).toFixed(1)}%)\n${hit.snippet}`
+      if (status !== "ok") {
+        throw new Error("検索APIがエラーを返しました");
+      }
+
+      // APIレスポンスをSearchResultData形式に変換
+      const searchResult: SearchResultData = {
+        result: hits.map(hit => 
+          `**${hit.title}** (スコア: ${((hit.score || 0) * 100).toFixed(1)}%)\n${hit.snippet || ''}`
         ).join('\n\n'),
-        source_documents: response.hits.map(hit => ({
-          page_content: hit.snippet,
+        source_documents: hits.map(hit => ({
+          page_content: hit.snippet || '',
           metadata: {
             vendor_id: hit.id,
             name: hit.title,
-            status: hit.metadata.status,
-            category: hit.metadata.category
+            status: "ok", // 防御的にデフォルト値を設定
+            category: "unknown"
           }
         }))
       };
