@@ -30,10 +30,23 @@ export type KBStats = {
 export { type SearchHit, type Metadata, type ApiResponse } from "@/lib/types";
 
 // SearchResponse type for fetcher
+import type { SearchHit as LibSearchHit, Metadata as LibMetadata } from "@/lib/types";
 export type SearchResponse = {
-  hits: SearchHit[];
-  metadata?: Metadata;
+  hits: LibSearchHit[];
+  metadata?: LibMetadata;
 };
+
+// SearchResult interface for search results
+export interface SearchResult {
+  id: string;
+  title: string;
+  content: string;
+  score?: number;
+  url?: string;
+  status?: string;
+  category?: string[];
+  vendor_id?: string;
+}
 
 // Status labels for display
 export const STATUS_LABEL: Record<VendorStatus, string> = {
