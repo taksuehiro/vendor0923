@@ -36,15 +36,17 @@ export type KBStats = {
   }>;
 };
 
-// Re-export API types so imports can use either "@/types" or "@/lib/types".
-export { type SearchHit, type Metadata, type ApiResponse } from "@/lib/types";
-
-// SearchResponse type for fetcher
-import type { SearchHit as LibSearchHit, Metadata as LibMetadata } from "@/lib/types";
-export type SearchResponse = {
-  hits: LibSearchHit[];
-  metadata?: LibMetadata;
+// API types defined locally
+export type ResponseMetadata = { total?: number; provider?: string; [k: string]: unknown };
+export type SearchHit = {
+  id: string;
+  title: string;
+  score?: number;
+  snippet?: string;
+  url?: string;
+  metadata?: Record<string, unknown>; // per-hit freeform
 };
+export type SearchResponse = { hits: SearchHit[]; metadata?: ResponseMetadata };
 
 // SearchResult interface for search results
 export interface SearchResult {

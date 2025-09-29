@@ -1,4 +1,4 @@
-import { SearchResponse, SearchHit, Metadata } from "@/types";
+import type { SearchResponse, SearchHit, ResponseMetadata } from "@/types";
 
 type SearchBody = { query: string; k?: number; use_mmr?: boolean };
 
@@ -38,6 +38,6 @@ export async function searchApi(body: SearchBody): Promise<SearchResponse> {
     };
   });
 
-  const metadata = (root.metadata ?? data.metadata) as Metadata | undefined;
+  const metadata = (root.metadata ?? data.metadata) as ResponseMetadata | undefined;
   return { hits, metadata };
 }
