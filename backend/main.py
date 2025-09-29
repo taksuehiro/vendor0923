@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import os
 from typing import Dict, Any
+from backend.rag_core import search_vendors, get_rag
 
 app = FastAPI()
 
@@ -31,7 +32,15 @@ class SearchReq(BaseModel):
 
 @app.get("/health")
 def health():
-    return with_metadata({"status": "ok"}, "mock" if USE_MOCK else "real")
+    mode = "mock" if USE_MOCK else "real"
+    try:
+        # if vector store already loaded, show its source; otherwise "uninitialized"
+        rag = get_rag() if not USE_MOCK else None
+        source = getattr(rag, "vectorstore_source", "uninitialized") if rag else "mock"
+        return with_metadata({"status": "ok", "mode": mode, "source": source}, mode)
+    except Exception as e:
+        # do not raise 500; return degraded info
+        return with_metadata({"status": "degraded", "mode": mode, "error": str(e)}, mode)
 
 @app.post("/auth/verify")
 def verify(payload: dict):
@@ -42,6 +51,12 @@ def verify(payload: dict):
 @app.post("/search")
 def search(payload: dict):
     q = (payload or {}).get("query", "")
+    k = (payload or {}).get("k", 5) or 5
+    use_mmr = bool((payload or {}).get("use_mmr", False))  # currently unused; kept for future
+
+    if not isinstance(q, str) or not q.strip():
+        raise HTTPException(status_code=400, detail="query is required")
+
     if USE_MOCK:
         resp = {
             "hits": [
@@ -51,15 +66,32 @@ def search(payload: dict):
         }
         return with_metadata(resp, "mock")
 
-    # === real path（必要に応じて実装を差し替え） ===
-    # ここではとりあえずモックに近い形のダミー実装（snippetから"mock"は消す）
-    resp = {
-        "hits": [
-            {"id": "r001", "title": f"Result for {q}", "score": 0.83, "snippet": "snippet 1"},
-            {"id": "r002", "title": f"Result for {q}", "score": 0.79, "snippet": "snippet 2"},
-        ]
-    }
-    return with_metadata(resp, "real")
+    # real path: FAISS + vendors.json via rag_core
+    try:
+        # search_vendors returns list of dicts with keys: id, title, score, snippet, metadata{status,category}
+        results = search_vendors(q, top_k=int(k))
+        resp = {"hits": results}
+        # expose where the vectorstore came from (S3/current, local-cache, rebuilt, etc.)
+        source = getattr(get_rag(), "vectorstore_source", "unknown")
+        meta = with_metadata(resp, "real")
+        meta["metadata"]["source"] = source
+        return meta
+    except Exception as e:
+        # return safe 200 with empty hits but mark error in metadata for observability
+        resp = {"hits": []}
+        meta = with_metadata(resp, "real")
+        meta["metadata"]["error"] = str(e)
+        return meta
+
+@app.on_event("startup")
+def _warm_vectorstore():
+    if not USE_MOCK:
+        try:
+            get_rag()  # loads or builds FAISS; sets .vectorstore_source
+            print(f"[startup] vectorstore source: {get_rag().vectorstore_source}")
+        except Exception as e:
+            # log but don't crash process; health will show degraded
+            print(f"[warmup] vectorstore init failed: {e}")
 
 # オプション：ビルド識別用
 @app.get("/__version")

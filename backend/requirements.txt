@@ -9,5 +9,6 @@ langchain==0.3.27
 langchain-openai==0.3.33
 langchain-community==0.3.29
 boto3==1.35.93
+openai
 
 
