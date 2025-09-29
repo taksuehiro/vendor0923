@@ -2,10 +2,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import os
-from typing import Dict, Any
-from backend.rag_core import search_vendors, get_rag
+import logging
+from typing import Literal
+
+# Optional: if your project already has these helpers, reuse them.
+from backend.rag_core_s3 import ensure_vectorstore_local  # downloads S3 -> local dir if not present
+from backend.rag_core import get_rag, search_vendors  # FAISS loader + search
 
 app = FastAPI()
+log = logging.getLogger("uvicorn")
 
 # CORS: Amplify/開発中はワイルドカード、credentialsはFalseで整合
 app.add_middleware(
@@ -16,23 +21,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ===== Feature flag: mock or real =====
-# デフォルトは real（未設定/空=real）。明示的に USE_MOCK=true の時だけモック。
-USE_MOCK = os.getenv("USE_MOCK", "false").lower() == "true"
+def bool_env(name: str, default: bool = False) -> bool:
+    v = os.getenv(name)
+    if v is None:
+        return default
+    return str(v).strip().lower() in ("1","true","yes","y","on")
 
-def with_metadata(payload: Dict[str, Any], provider: str) -> Dict[str, Any]:
-    payload = dict(payload)
-    payload["metadata"] = {"provider": provider, "status": "ok"}
-    return payload
+# ---- runtime switches (prod-safe defaults) ----
+USE_MOCK = bool_env("USE_MOCK", default=False)
+VECTORSTORE_S3_BUCKET = os.getenv("VECTORSTORE_S3_BUCKET", "")
+VECTORSTORE_S3_PREFIX = os.getenv("VECTORSTORE_S3_PREFIX", "")
+VECTORSTORE_LOCAL_DIR = os.getenv("VECTORSTORE_LOCAL_DIR", "/app/vectorstore")
 
-class SearchReq(BaseModel):
-    query: str = Field(..., min_length=1)
-    k: int | None = Field(default=5, ge=1, le=50)
+# Source: s3 if bucket/prefix present, else local
+SOURCE: Literal["s3","local"] = "s3" if (VECTORSTORE_S3_BUCKET and VECTORSTORE_S3_PREFIX) else "local"
+
+# Log on startup (so we can see real/mode in CloudWatch)
+log.info(f"[startup] USE_MOCK={USE_MOCK} SOURCE={SOURCE} S3={VECTORSTORE_S3_BUCKET}/{VECTORSTORE_S3_PREFIX} LOCAL_DIR={VECTORSTORE_LOCAL_DIR}")
+
+class SearchBody(BaseModel):
+    query: str
+    k: int | None = 5
     use_mmr: bool | None = False
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status":"ok", "mode": ("mock" if USE_MOCK else "real"), "source": SOURCE}
+
+@app.get("/__debug/env")
+def debug_env():
+    # Return a safe subset for troubleshooting; secrets masked
+    return {
+        "USE_MOCK": USE_MOCK,
+        "VECTORSTORE_S3_BUCKET": VECTORSTORE_S3_BUCKET or "<empty>",
+        "VECTORSTORE_S3_PREFIX": VECTORSTORE_S3_PREFIX or "<empty>",
+        "VECTORSTORE_LOCAL_DIR": VECTORSTORE_LOCAL_DIR or "<empty>",
+        "OPENAI_API_KEY": "***" if os.getenv("OPENAI_API_KEY") else "<unset>",
+    }
 
 @app.post("/auth/verify")
 def verify(payload: dict):
@@ -41,39 +66,30 @@ def verify(payload: dict):
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @app.post("/search")
-def search(payload: dict):
-    q = (payload or {}).get("query", "")
-    k = (payload or {}).get("k", 5) or 5
-    use_mmr = bool((payload or {}).get("use_mmr", False))  # currently unused; kept for future
-
-    if not isinstance(q, str) or not q.strip():
-        raise HTTPException(status_code=400, detail="query is required")
-
+def search(body: SearchBody):
     if USE_MOCK:
-        resp = {
+        return {
             "hits": [
-                {"id": "v001", "title": f"Result for {q}", "score": 0.92, "snippet": "mock snippet 1"},
-                {"id": "v002", "title": f"Result for {q}", "score": 0.81, "snippet": "mock snippet 2"},
+                {"id":"v001","title":f"Result for {body.query}","score":0.92,"snippet":"mock snippet 1"},
+                {"id":"v002","title":f"Result for {body.query}","score":0.81,"snippet":"mock snippet 2"},
             ]
         }
-        return with_metadata(resp, "mock")
-
-    # real path: FAISS + vendors.json via rag_core
+    # real path
+    # 1) ensure local vectorstore from S3 (if configured)
+    if SOURCE == "s3":
+        ensure_vectorstore_local(
+            bucket=VECTORSTORE_S3_BUCKET,
+            prefix=VECTORSTORE_S3_PREFIX,
+            local_dir=VECTORSTORE_LOCAL_DIR,
+        )
+    # 2) load FAISS and search
     try:
-        # search_vendors returns list of dicts with keys: id, title, score, snippet, metadata{status,category}
-        results = search_vendors(q, top_k=int(k))
-        resp = {"hits": results}
-        # expose where the vectorstore came from (S3/current, local-cache, rebuilt, etc.)
-        source = getattr(get_rag(), "vectorstore_source", "unknown")
-        meta = with_metadata(resp, "real")
-        meta["metadata"]["source"] = source
-        return meta
+        results = search_vendors(body.query, top_k=body.k or 5)
+        return {"hits": results}
     except Exception as e:
-        # return safe 200 with empty hits but mark error in metadata for observability
-        resp = {"hits": []}
-        meta = with_metadata(resp, "real")
-        meta["metadata"]["error"] = str(e)
-        return meta
+        # return safe 200 with empty hits but mark error for observability
+        log.error(f"Search failed: {e}")
+        return {"hits": []}
 
 @app.on_event("startup")
 def _warm_vectorstore():
