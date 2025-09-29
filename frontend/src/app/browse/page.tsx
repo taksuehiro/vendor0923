@@ -47,7 +47,7 @@ export default function BrowsePage() {
     {
       id: "vendor_1",
       name: "LiberCraft",
-      status: "ok",
+      status: "interviewed",
       listed: false,
       type: "スクラッチ",
       category: ["スクラッチ"],
@@ -63,7 +63,7 @@ export default function BrowsePage() {
     {
       id: "vendor_2",
       name: "TechCorp",
-      status: "unknown",
+      status: "not_interviewed",
       listed: true,
       type: "SaaS",
       category: ["SaaS"],
@@ -78,7 +78,7 @@ export default function BrowsePage() {
     {
       id: "vendor_3",
       name: "DataSoft",
-      status: "ok",
+      status: "interviewed",
       listed: false,
       type: "SI",
       category: ["SI"],
@@ -93,7 +93,7 @@ export default function BrowsePage() {
     {
       id: "vendor_4",
       name: "CloudTech",
-      status: "unknown",
+      status: "not_interviewed",
       listed: true,
       type: "SaaS",
       category: ["SaaS"],

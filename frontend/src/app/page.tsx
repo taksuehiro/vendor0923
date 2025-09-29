@@ -127,7 +127,7 @@ export default function MainPage() {
         {
           id: "V-LiberCraft",
           name: "LiberCraft",
-          status: "面談済",
+          status: "interviewed",
           listed: false,
           type: "スクラッチ",
           category: ["スクラッチ"],
@@ -153,7 +153,7 @@ export default function MainPage() {
         {
           id: "V-TechCorp",
           name: "TechCorp",
-          status: "未面談",
+          status: "not_interviewed",
           listed: true,
           type: "SaaS",
           category: ["SaaS"],

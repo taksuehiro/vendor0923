@@ -3,24 +3,16 @@
  * Keep in sync with backend contracts as they evolve.
  */
 
-export type VendorStatus = "ok" | "error" | "unknown";
+import type { VendorStatus } from "./types/vendor";
 
 export type Vendor = {
   id: string;
   name: string;
-  // optional fields (UI can render even if undefined)
-  category?: string[];
   status?: VendorStatus;
-  score?: number;
-  // 追加フィールド
   listed?: boolean;
   type?: string;
-  meta?: {
-    url?: string;
-    employees_band?: string;
-    investors?: string[];
-    [key: string]: unknown;
-  };
+  category?: string[];
+  meta?: Record<string, unknown>;
 };
 
 export type Facets = {
@@ -87,9 +79,18 @@ export interface VendorWithDetails extends Vendor {
   type?: string;
 }
 
+// Re-export VendorStatus for external use
+export type { VendorStatus } from "./types/vendor";
+
 // Status labels for display
 export const STATUS_LABEL: Record<VendorStatus, string> = {
-  ok: "面談済",
-  error: "エラー",
+  uncontacted: "未接触",
+  interviewed: "面談済",
+  not_interviewed: "未面談",
+  proposing: "提案中",
+  poc: "PoC",
+  contracted: "契約済",
+  on_hold: "保留",
+  lost: "失注",
   unknown: "不明"
 };

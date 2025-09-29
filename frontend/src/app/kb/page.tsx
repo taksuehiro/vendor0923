@@ -25,7 +25,7 @@ export default function KBPage() {
           snippet: "AI・機械学習を活用したスクラッチ開発サービス",
           score: 0.95,
           metadata: {
-            status: "ok",
+            status: "interviewed",
             category: "スクラッチ開発"
           }
         },
@@ -35,7 +35,7 @@ export default function KBPage() {
           snippet: "クラウドインフラ構築・運用支援",
           score: 0.87,
           metadata: {
-            status: "unknown",
+            status: "not_interviewed",
             category: "SaaS"
           }
         }
@@ -57,8 +57,8 @@ export default function KBPage() {
       "JSON": 20
     },
     byStatus: {
-      "面談済": 12,
-      "未面談": 8
+      interviewed: 12,
+      not_interviewed: 8
     },
     topCategories: [
       { name: "スクラッチ", count: 8 },
@@ -71,7 +71,7 @@ export default function KBPage() {
     {
       id: "vendor_1",
       name: "LiberCraft",
-      status: "ok",
+      status: "interviewed",
       listed: false,
       type: "スクラッチ",
       category: ["スクラッチ"],
@@ -84,7 +84,7 @@ export default function KBPage() {
     {
       id: "vendor_2",
       name: "TechCorp",
-      status: "unknown",
+      status: "not_interviewed",
       listed: true,
       type: "SaaS",
       category: ["SaaS"],
@@ -96,7 +96,7 @@ export default function KBPage() {
     {
       id: "vendor_3",
       name: "DataSoft",
-      status: "ok",
+      status: "interviewed",
       listed: false,
       type: "SI",
       category: ["SI"],
