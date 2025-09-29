@@ -19,7 +19,7 @@ export type Vendor = {
     url?: string;
     employees_band?: string;
     investors?: string[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
 };
 
@@ -69,7 +69,7 @@ export interface SearchResult {
   metadata?: {
     status?: string;
     category?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
