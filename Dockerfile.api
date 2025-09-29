@@ -16,9 +16,3 @@ RUN echo "GIT_SHA=${GIT_SHA}" > /app/BUILD_INFO
 EXPOSE 8080
 # NOTE: main.py lives in backend/, so import path is backend.main:app
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
-
-
-
-
-
-

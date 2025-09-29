@@ -32,15 +32,7 @@ class SearchReq(BaseModel):
 
 @app.get("/health")
 def health():
-    mode = "mock" if USE_MOCK else "real"
-    try:
-        # if vector store already loaded, show its source; otherwise "uninitialized"
-        rag = get_rag() if not USE_MOCK else None
-        source = getattr(rag, "vectorstore_source", "uninitialized") if rag else "mock"
-        return with_metadata({"status": "ok", "mode": mode, "source": source}, mode)
-    except Exception as e:
-        # do not raise 500; return degraded info
-        return with_metadata({"status": "degraded", "mode": mode, "error": str(e)}, mode)
+    return {"status": "ok"}
 
 @app.post("/auth/verify")
 def verify(payload: dict):
