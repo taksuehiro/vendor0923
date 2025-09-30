@@ -315,7 +315,7 @@ def options_handler(path: str):
 
 ### 問題
 ```bash
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8080
 ```
 プロジェクトルートから実行時に以下のエラーが発生：
 ```
@@ -329,12 +329,12 @@ ERROR: Error loading ASGI app. Could not import module "main".
 1. バックエンドディレクトリに移動：
 ```bash
 cd backend
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8080
 ```
 
 2. または相対パスで実行：
 ```bash
-uvicorn backend.main:app --reload --port 8000
+uvicorn backend.main:app --reload --port 8080
 ```
 
 ---
@@ -350,7 +350,7 @@ NextAuth.jsの設定で環境変数が未設定のエラーが発生。
 # frontend/.env.local
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-super-secret-key
-NEXT_PUBLIC_API_BASE=http://127.0.0.1:8000
+NEXT_PUBLIC_API_BASE=http://127.0.0.1:8080
 ```
 
 ---

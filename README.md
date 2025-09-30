@@ -90,7 +90,7 @@ cp env.example .env
 uvicorn main:app --host 0.0.0.0 --port 8080
 
 # 開発用（リロード有効）
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8080
 ```
 
 ### 3. フロントエンド（Next.js）のセットアップ
@@ -149,7 +149,7 @@ curl -i -X POST http://localhost:8080/debug/echo \
 
 ### フロントエンド (.env.local)
 ```env
-NEXT_PUBLIC_API_BASE=http://127.0.0.1:8000
+NEXT_PUBLIC_API_BASE=http://127.0.0.1:8080
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=dev-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
@@ -226,7 +226,7 @@ python tools/reindex.py --input data/vendors.json --chunk_size 0
 ### ローカル開発
 ```bash
 # バックエンド起動
-cd backend && uvicorn main:app --reload --port 8000
+cd backend && uvicorn main:app --reload --port 8080
 
 # フロントエンド起動（別ターミナル）
 cd frontend && npm run dev
