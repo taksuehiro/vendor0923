@@ -7,7 +7,7 @@ from typing import Literal
 
 # Optional: if your project already has these helpers, reuse them.
 from backend.rag_core_s3 import ensure_vectorstore_local  # downloads S3 -> local dir if not present
-from backend.rag_core import get_rag, search_vendors  # FAISS loader + search
+from rag_core.rag_core import get_rag, search_vendors  # FAISS loader + search
 
 app = FastAPI()
 log = logging.getLogger("uvicorn")
