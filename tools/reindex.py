@@ -9,7 +9,7 @@ from langchain_openai import OpenAIEmbeddings
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.rag_core.indexer import load_documents_auto, load_documents_from_dir, build_faiss
+from rag_core.indexer import load_documents_auto, load_documents_from_dir, build_faiss
 
 def main():
     load_dotenv()  # .env の OPENAI_API_KEY を読み込み
