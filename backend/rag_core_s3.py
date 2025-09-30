@@ -48,10 +48,10 @@ def promote_staging_to_current(staging_prefix: str):
             Key=_s3_key(f"{CURRENT}/{key}"),
         )
 
-def ensure_vectorstore_local(local_dir: str):
+def ensure_vectorstore_local(local_dir: str = "/app/vectorstore"):
     """
-    Backward compatibility alias.
-    Previously, main.py expected ensure_vectorstore_local().
-    This simply calls download_current_to().
+    Ensure that the vectorstore is available locally.
+    Downloads from S3 if not already present.
     """
-    return download_current_to(local_dir)
+    if not exists_current():
+        download_current_to(local_dir)
