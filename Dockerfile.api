@@ -10,7 +10,9 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY backend/ /app/backend/
+COPY data/ /app/data/
+COPY rag_core/ /app/rag_core/
 RUN echo "GIT_SHA=${GIT_SHA}" > /app/BUILD_INFO
 
 EXPOSE 8080
