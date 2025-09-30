@@ -48,10 +48,14 @@ def promote_staging_to_current(staging_prefix: str):
             Key=_s3_key(f"{CURRENT}/{key}"),
         )
 
-def ensure_vectorstore_local(local_dir: str = "/app/vectorstore"):
+def ensure_vectorstore_local(bucket: str, prefix: str, local_dir: str):
     """
-    Ensure that the vectorstore is available locally.
-    Downloads from S3 if not already present.
+    S3上の指定されたベクトルストアをローカルに同期する。
     """
-    if not exists_current():
-        download_current_to(local_dir)
+    import boto3, os
+
+    s3 = boto3.client("s3")
+    os.makedirs(local_dir, exist_ok=True)
+
+    for key in ["index.faiss", "index.pkl"]:
+        s3.download_file(bucket, f"{prefix}/{key}", os.path.join(local_dir, key))
