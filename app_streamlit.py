@@ -199,12 +199,7 @@ def main():
     with st.sidebar:
         st.header("⚙️ パラメータ")
 
-        current_key = resolve_openai_key()
-        api_key_input = st.text_input("OpenAI API Key（必要なら入力）", type="password", value=current_key)
-        if api_key_input and api_key_input != current_key:
-            st.session_state["OPENAI_API_KEY"] = api_key_input
-            os.environ["OPENAI_API_KEY"] = api_key_input
-            st.success("APIキーを反映しました")
+        st.info("Amazon Bedrock Titan を使用します（API Key不要）")
 
         st.divider()
         st.subheader("📁 データ読み込み")
@@ -346,17 +341,16 @@ def main():
         loaded_file = st.session_state.get("loaded_file", "不明")
         st.caption(f"📄 読み込み済み: {Path(loaded_file).name}（{len(docs)} ドキュメント）")
 
-    # Embeddings / LLM 準備の直前にキーチェック
-    api_key = resolve_openai_key()
-    st.caption("KEY head: " + (api_key[:10] if api_key else ""))  # 確認表示
+    # Bedrock サービスを使用（API Key不要）
+    st.caption("Amazon Bedrock Titan を使用中...")
 
-    if not api_key:
-        st.error("OpenAI APIキーが未設定です。左のサイドバーに入力してください。")
+    # Bedrock サービスを初期化
+    try:
+        embeddings = get_embeddings()
+        llm = get_chat()
+    except Exception as e:
+        st.error(f"Amazon Bedrock への接続に失敗しました: {e}")
         st.stop()
-
-    # 以降、明示的にキーを渡す
-    embeddings = get_embeddings(embed_model, api_key=api_key)
-    llm = get_chat(chat_model, temperature=temperature, api_key=api_key)
 
     # ベクトルストア用意
     try:

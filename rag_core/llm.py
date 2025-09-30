@@ -1,7 +1,14 @@
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from rag_core.bedrock_llm import TitanLLM
+from rag_core.bedrock_embeddings import TitanEmbeddings
 
-def get_embeddings(model_name: str, api_key: str):
-    return OpenAIEmbeddings(model=model_name, api_key=api_key)
+def get_embeddings(model_name: str = None, api_key: str = None):
+    """
+    Bedrock Titan Embeddings を返す（引数は互換性のため残すが使用しない）
+    """
+    return TitanEmbeddings()
 
-def get_chat(model_name: str, temperature: float, api_key: str):
-    return ChatOpenAI(model=model_name, temperature=temperature, api_key=api_key)
+def get_chat(model_name: str = None, temperature: float = None, api_key: str = None):
+    """
+    Bedrock Titan LLM を返す（引数は互換性のため残すが使用しない）
+    """
+    return TitanLLM()

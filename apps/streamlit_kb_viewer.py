@@ -32,16 +32,11 @@ def main():
     st.set_page_config(page_title="KBビューア", page_icon="📚", layout="wide")
     st.title("📚 ナレッジベースビューア")
     
-    # APIキー設定
+    # 設定
     with st.sidebar:
         st.header("⚙️ 設定")
         
-        current_key = resolve_openai_key()
-        api_key_input = st.text_input("OpenAI API Key", type="password", value=current_key)
-        if api_key_input and api_key_input != current_key:
-            st.session_state["OPENAI_API_KEY"] = api_key_input
-            os.environ["OPENAI_API_KEY"] = api_key_input
-            st.success("APIキーを反映しました")
+        st.info("Amazon Bedrock Titan を使用します（API Key不要）")
         
         # ベクトルストアディレクトリ設定
         vector_dir = st.text_input(
@@ -50,15 +45,12 @@ def main():
             help="FAISSベクトルストアの保存先"
         )
     
-    # APIキーチェック
-    api_key = resolve_openai_key()
-    if not api_key:
-        st.error("OpenAI APIキーが未設定です。左のサイドバーに入力してください。")
-        st.stop()
+    # Bedrock サービスを使用（API Key不要）
+    st.caption("Amazon Bedrock Titan を使用中...")
     
     # ベクトルストアの読み込み
     try:
-        embeddings = get_embeddings("text-embedding-3-small", api_key=api_key)
+        embeddings = get_embeddings()
         vectorstore, used_dir = load_vectorstore(vector_dir, embeddings)
         
         if vectorstore is None:

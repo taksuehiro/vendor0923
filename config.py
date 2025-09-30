@@ -19,7 +19,7 @@ DEFAULT_TOP_K = 5
 USE_MMR = False
 SCORE_THRESHOLD = None  # 例: 0.2 で絞り込み
 
-# モデル（UIから切替想定）
-EMBEDDING_MODEL = "text-embedding-3-small"  # OpenAI
-CHAT_MODEL = "gpt-3.5-turbo"
+# モデル（Amazon Bedrock Titan使用）
+EMBEDDING_MODEL = "amazon.titan-embed-text-v2:0"  # Bedrock Titan Embeddings
+CHAT_MODEL = "amazon.titan-text-express-v1"  # Bedrock Titan Text
 TEMPERATURE = 0.0

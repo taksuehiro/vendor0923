@@ -12,7 +12,6 @@ from langchain_core.documents import Document
 from backend.rag_core_s3 import exists_current, download_current_to, upload_to_staging, promote_staging_to_current
 
 # 環境変数
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 VECTOR_DIR = Path(os.getenv("VECTOR_DIR", "/app/vectorstore")).resolve()
 DATA_PATH = Path(os.getenv("VENDOR_DATA_JSON", "/app/data/vendors.json")).resolve()
 
