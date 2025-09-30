@@ -53,8 +53,8 @@ Thumbs.db
 .streamlit/
 
 # Vector stores
-.vectorstores/
-vectorstore/
+# .vectorstores/
+# vectorstore/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -65,6 +65,7 @@ vectorstore/
 # Temporary files
 *.tmp
 *.temp
+
 
 
 

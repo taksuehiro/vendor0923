@@ -47,3 +47,11 @@ def promote_staging_to_current(staging_prefix: str):
             CopySource={"Bucket": BUCKET, "Key": _s3_key(f"{staging_prefix}/{key}")},
             Key=_s3_key(f"{CURRENT}/{key}"),
         )
+
+def ensure_vectorstore_local(local_dir: str):
+    """
+    Backward compatibility alias.
+    Previously, main.py expected ensure_vectorstore_local().
+    This simply calls download_current_to().
+    """
+    return download_current_to(local_dir)
