@@ -1,20 +1,20 @@
-FROM python:3.11-slim
-
-ARG GIT_SHA
-ENV GIT_SHA=${GIT_SHA}
+FROM python:3.10-slim
 
 WORKDIR /app
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 依存関係
+COPY backend/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-COPY . .
-RUN echo "GIT_SHA=${GIT_SHA}" > /app/BUILD_INFO
+# アプリコード
+COPY backend/ /app/backend/
+COPY rag_core/ /app/rag_core/
+COPY data/ /app/data/
+
+# 学習済みベクトルストアを同梱（local固定で使用）
+COPY vectorstore/ /app/vectorstore/
 
 EXPOSE 8080
-# NOTE: main.py lives in backend/, so import path is backend.main:app
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 
