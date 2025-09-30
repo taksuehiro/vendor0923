@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import List, Dict, Any
 
-from langchain_openai import OpenAIEmbeddings
+from rag_core.bedrock_embeddings import TitanEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_core.documents import Document
@@ -20,10 +20,7 @@ INDEX_NAME = "vendors"
 
 class VendorRAG:
     def __init__(self) -> None:
-        if not OPENAI_API_KEY:
-            raise RuntimeError("OPENAI_API_KEY が未設定です。ローカルでは .env.local / .env を、ECS では Secrets Manager 経由で設定してください。")
-
-        self.embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+        self.embeddings = TitanEmbeddings()
         self.vs: FAISS | None = None
         self.vectorstore_source: str = "unknown"
 

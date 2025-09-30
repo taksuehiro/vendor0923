@@ -6,7 +6,7 @@ from typing import Iterable, List, Optional
 
 from langchain.schema import Document
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
+from rag_core.bedrock_embeddings import TitanEmbeddings
 import os
 import logging
 
@@ -98,11 +98,11 @@ def load_documents_from_dir(dir_path: Path, chunk_size: int = 0, chunk_overlap: 
 
 def build_faiss(
     documents: Iterable[Document],
-    embeddings: Optional[OpenAIEmbeddings] = None,
+    embeddings: Optional[TitanEmbeddings] = None,
     out_dir: Optional[Path] = None
 ) -> FAISS:
     if embeddings is None:
-        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        embeddings = TitanEmbeddings()
     vs = FAISS.from_documents(list(documents), embeddings)
     if out_dir:
         out_dir.mkdir(parents=True, exist_ok=True)

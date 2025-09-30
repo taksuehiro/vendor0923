@@ -7,7 +7,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
+from rag_core.bedrock_embeddings import TitanEmbeddings
 
 from rag_core.indexer import load_documents_auto, load_documents_from_dir, build_faiss
 
@@ -35,7 +35,7 @@ def _summarize(docs):
 
 @st.cache_resource(show_spinner=False)
 def _emb():
-    return OpenAIEmbeddings(model="text-embedding-3-small")
+    return TitanEmbeddings()
 
 def _build_or_load_vectorstore(docs):
     DEFAULT_VS_DIR.mkdir(parents=True, exist_ok=True)

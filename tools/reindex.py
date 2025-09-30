@@ -3,7 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
+from rag_core.bedrock_embeddings import TitanEmbeddings
 
 # プロジェクトルートをパスに追加
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +27,7 @@ def main():
         docs = load_documents_auto(path, chunk_size=args.chunk_size, chunk_overlap=args.chunk_overlap)
 
     print(f"[reindex] docs: {len(docs)}")
-    vs = build_faiss(docs, embeddings=OpenAIEmbeddings(model="text-embedding-3-small"), out_dir=Path(args.out_dir))
+    vs = build_faiss(docs, embeddings=TitanEmbeddings(), out_dir=Path(args.out_dir))
     print(f"[reindex] saved to: {args.out_dir}")
 
 if __name__ == "__main__":
