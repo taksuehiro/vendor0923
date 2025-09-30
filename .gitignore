@@ -74,3 +74,13 @@ Thumbs.db
 
 
 
+# Local ECS/secret files
+openai-secret.json
+taskdef-vendor0919.json
+td_bedrock.json
+
+# Mistakenly saved command outputs
+ecs describe-tasks \\
+ecs update-service \\
+leep 30
+ter \\
