@@ -10,7 +10,7 @@ from langchain_openai import OpenAIEmbeddings
 import os
 import logging
 
-from backend.rag_core.loaders.json_loader import load_json_as_documents
+from rag_core.loaders.json_loader import load_json_as_documents
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ def build_faiss(
         # S3 が設定されていれば staging にアップロード → current へ昇格
         if os.getenv("VECTORSTORE_S3_BUCKET"):
             try:
-                from backend.rag_core_s3 import upload_to_staging, promote_staging_to_current
+                from rag_core_s3 import upload_to_staging, promote_staging_to_current
                 staging = upload_to_staging(str(out_dir / safe))
                 promote_staging_to_current(staging)
                 log.info("Vectorstore promoted to S3 current")
