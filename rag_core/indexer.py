@@ -10,7 +10,7 @@ from langchain_openai import OpenAIEmbeddings
 import os
 import logging
 
-from rag_core.loaders.json_loader import load_json_as_documents
+from backend.rag_core.loaders.json_loader import load_json_as_documents
 
 log = logging.getLogger(__name__)
 
