@@ -4,9 +4,12 @@ const isCI = !!process.env.CI || !!process.env.AMPLIFY_BRANCH;
 const nextConfig = {
   eslint: { ignoreDuringBuilds: isCI },
   typescript: { ignoreBuildErrors: isCI },
-  // ↓ これを追加
-  trailingSlash: false,
-  skipTrailingSlashRedirect: true,
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+  // src ディレクトリの設定は不要（Next.js が自動認識する）
 };
 
 module.exports = nextConfig;
