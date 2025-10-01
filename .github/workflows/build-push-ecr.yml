@@ -1,0 +1,70 @@
+name: Build & Push to ECR (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag_suffix:
+        description: "任意のsuffix（例: hotfix1。空でもOK）"
+        required: false
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: ap-northeast-1
+      ACCOUNT_ID: 067717894185
+      ECR_REPO: vendor0919-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute TAG
+        id: meta
+        run: |
+          TS=$(date +%Y%m%d-%H%M)
+          SHA=$(git rev-parse --short=7 HEAD)
+          if [ -n "${{ github.event.inputs.image_tag_suffix }}" ]; then
+            TAG="app-${TS}-${SHA}-${{ github.event.inputs.image_tag_suffix }}"
+          else
+            TAG="app-${TS}-${SHA}"
+          fi
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::067717894185:role/GitHubActionsECRPush
+          aws-region: ap-northeast-1
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+            | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      - name: Build image
+        run: |
+          docker build -f Dockerfile.api -t $ECR_REPO:${{ steps.meta.outputs.TAG }} .
+
+      - name: Push to ECR
+        id: push
+        run: |
+          IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:${{ steps.meta.outputs.TAG }}
+          docker tag $ECR_REPO:${{ steps.meta.outputs.TAG }} $IMAGE_URI
+          docker push $IMAGE_URI
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Get digest
+        id: digest
+        run: |
+          DIGEST=$(aws ecr describe-images --repository-name $ECR_REPO --image-ids imageTag=${{ steps.meta.outputs.TAG }} \
+            --query 'imageDetails[0].imageDigest' --output text)
+          echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
+
+      - name: Summary
+        run: |
+          echo "TAG:     ${{ steps.meta.outputs.TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "IMAGE:   $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:${{ steps.meta.outputs.TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "DIGEST:  ${{ steps.digest.outputs.DIGEST }}" >> $GITHUB_STEP_SUMMARY
