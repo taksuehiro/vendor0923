@@ -26,37 +26,33 @@ class SearchBody(BaseModel):
 def health():
     return {"status": "ok"}  # 依存不要
 
-def _do_search(q: str):
-    if not q:
+@app.get("/search")
+def search_get(query: str = Query(...), k: int = 5, use_mmr: bool = False):
+    if not query:
         raise HTTPException(status_code=422, detail="empty query")
-    # TODO: 明日以降 vectorstore を接続
-    return {"answers":[f"echo: {q}"], "note":"temp"}
+    try:
+        results = search_vendors(query, top_k=k)
+        return {"query": query, "hits": results}
+    except Exception as e:
+        log.error(f"Search failed: {e}")
+        return {"query": query, "hits": [], "error": str(e)}
 
-@app.get("/search")   # GET
-def search_get(query: str = Query(...)):
-    return _do_search(query)
-
-@app.post("/search")  # POST JSON {"query": "..."} も {"q": "..."} も受ける
-def search_post(payload: dict = Body(...)):
-    q = payload.get("query") or payload.get("q")
-    if not q:
-        raise HTTPException(status_code=422, detail="Missing 'query'")
-    return _do_search(q)
+@app.post("/search")
+def search_post(body: SearchBody):
+    if not body.query:
+        raise HTTPException(status_code=422, detail="empty query")
+    try:
+        results = search_vendors(body.query, top_k=body.k or 5)
+        return {"query": body.query, "hits": results}
+    except Exception as e:
+        log.error(f"Search failed: {e}")
+        return {"query": body.query, "hits": [], "error": str(e)}
 
 @app.post("/auth/verify")
 def verify(payload: dict):
     if payload.get("email") == "demo@example.com" and payload.get("password") == "secret":
         return {"id": 1, "email": payload["email"], "org_id": 1}
     raise HTTPException(status_code=401, detail="Invalid credentials")
-
-@app.post("/search")
-def search(body: SearchBody):
-    try:
-        results = search_vendors(body.query, top_k=body.k or 5)
-        return {"hits": results}
-    except Exception as e:
-        log.error(f"Search failed: {e}")
-        return {"hits": []}
 
 @app.on_event("startup")
 def _warm_vectorstore():
