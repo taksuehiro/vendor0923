@@ -6,7 +6,7 @@ from typing import List, Optional
 import boto3
 from botocore.exceptions import ClientError
 
-from langchain_aws import BedrockEmbeddings
+from langchain_community.embeddings import BedrockEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 
