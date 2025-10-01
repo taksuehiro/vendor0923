@@ -10,8 +10,8 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY backend/ /app/backend/
 COPY data/ /app/data/
 
-# rag_core を明示的にコピー
-COPY rag_core/ /app/rag_core/
+# rag_core をコピー
+COPY backend/rag_core/ /app/rag_core/
 
 # ポート公開
 EXPOSE 8080
