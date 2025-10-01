@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # backend と data をコピー
 COPY backend/ /app/backend/
-COPY data/ /app/data/
+COPY backend/data/ /app/data/
 
 # rag_core をコピー
 COPY backend/rag_core/ /app/rag_core/
