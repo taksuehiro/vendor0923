@@ -9,6 +9,9 @@ build/
 dist/
 .git/
 
+# 削除されたファイルの残骸を防ぐ
+backend/api_app.py
+
 
 
 
