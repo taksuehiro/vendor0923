@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
@@ -22,10 +22,26 @@ class SearchBody(BaseModel):
     k: int | None = 5
     use_mmr: bool | None = False
 
-@app.get("/health")
+@app.get("/health", include_in_schema=False)
 def health():
-    # local固定
-    return {"status": "ok", "mode": "real", "source": "local"}
+    return {"status": "ok"}  # 依存不要
+
+def _do_search(q: str):
+    if not q:
+        raise HTTPException(status_code=422, detail="empty query")
+    # TODO: 明日以降 vectorstore を接続
+    return {"answers":[f"echo: {q}"], "note":"temp"}
+
+@app.get("/search")   # GET
+def search_get(query: str = Query(...)):
+    return _do_search(query)
+
+@app.post("/search")  # POST JSON {"query": "..."} も {"q": "..."} も受ける
+def search_post(payload: dict = Body(...)):
+    q = payload.get("query") or payload.get("q")
+    if not q:
+        raise HTTPException(status_code=422, detail="Missing 'query'")
+    return _do_search(q)
 
 @app.post("/auth/verify")
 def verify(payload: dict):
