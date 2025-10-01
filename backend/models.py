@@ -1,16 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import List, Optional
 
-class SearchReq(BaseModel):
-    query: str = Field(..., min_length=1)
-    k: int = 1
-    use_mmr: bool = False
+class SearchRequest(BaseModel):
+    query: str
+    k: int = 5
 
-class Hit(BaseModel):
-    id: str
-    title: str
-    score: float
-    snippet: str
+class SearchHit(BaseModel):
+    text: str
+    score: Optional[float] = None
+    metadata: Optional[dict] = None
 
-class SearchRes(BaseModel):
-    ok: bool = True
-    hits: list[Hit]
+class SearchResponse(BaseModel):
+    results: List[SearchHit]

@@ -1,71 +1,47 @@
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import logging
+from langchain.docstore.document import Document
 
-from rag_core.rag_core import get_rag, search_vendors  # local固定
+from backend.models import SearchRequest, SearchResponse, SearchHit
+from backend.rag_core import build_or_load_vectorstore, search_vendors
 
-app = FastAPI()
-log = logging.getLogger("uvicorn")
+app = FastAPI(title="Vendor RAG API", version="0.1.0")
 
-# CORS: 開発中はワイルドカード、credentialsはFalseで整合
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["*"],  # TODO: 本番は制限推奨
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class SearchBody(BaseModel):
-    query: str
-    k: int | None = 5
-    use_mmr: bool | None = False
+_VECTORSTORE = None
 
-@app.get("/health", include_in_schema=False)
+@app.get("/health")
 def health():
-    return {"status": "ok"}  # 依存不要
+    return {"status": "ok"}
 
-@app.get("/search")
-def search_get(query: str = Query(...), k: int = 5, use_mmr: bool = False):
-    if not query:
-        raise HTTPException(status_code=422, detail="empty query")
+@app.post("/search", response_model=SearchResponse)
+def search(req: SearchRequest):
+    global _VECTORSTORE
+    if _VECTORSTORE is None:
+        try:
+            _VECTORSTORE = build_or_load_vectorstore()
+        except Exception as e:
+            # 初回に S3 が空だった場合だけ、最小シードで作成（今回は S3 を先置き済みなので通常は通らない）
+            seed_docs = [
+                Document(page_content="Vendor A provides Bedrock integration for embeddings.", metadata={"vendor":"A"}),
+                Document(page_content="Vendor B supports S3 archival of logs.", metadata={"vendor":"B"}),
+                Document(page_content="Titan embeddings via Amazon Bedrock return 1536-d vectors.", metadata={"note":"titan"})
+            ]
+            try:
+                _VECTORSTORE = build_or_load_vectorstore(seed_docs)
+            except Exception as inner:
+                raise HTTPException(status_code=500, detail=str(inner)) from inner
+
     try:
-        results = search_vendors(query, top_k=k)
-        return {"query": query, "hits": results}
+        hits = search_vendors(_VECTORSTORE, req.query, k=req.k)
     except Exception as e:
-        log.error(f"Search failed: {e}")
-        return {"query": query, "hits": [], "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/search")
-def search_post(body: SearchBody):
-    if not body.query:
-        raise HTTPException(status_code=422, detail="empty query")
-    try:
-        results = search_vendors(body.query, top_k=body.k or 5)
-        return {"query": body.query, "hits": results}
-    except Exception as e:
-        log.error(f"Search failed: {e}")
-        return {"query": body.query, "hits": [], "error": str(e)}
-
-@app.post("/auth/verify")
-def verify(payload: dict):
-    if payload.get("email") == "demo@example.com" and payload.get("password") == "secret":
-        return {"id": 1, "email": payload["email"], "org_id": 1}
-    raise HTTPException(status_code=401, detail="Invalid credentials")
-
-@app.on_event("startup")
-def _warm_vectorstore():
-    try:
-        get_rag()  # localのFAISSをロード
-        log.info(f"[startup] vectorstore source: local")
-    except Exception as e:
-        log.warning(f"[warmup] vectorstore init failed (local): {e}")
-
-@app.get("/__version")
-def version():
-    try:
-        with open("/app/BUILD_INFO","r") as f:
-            return {"ok": True, "build": f.read().strip()}
-    except Exception:
-        return {"ok": True, "build": "unknown"}
+    return SearchResponse(results=[SearchHit(**h) for h in hits])
