@@ -15,4 +15,4 @@ COPY data/ /app/data/
 COPY vectorstore/ /app/vectorstore/
 
 EXPOSE 8080
-CMD ["uvicorn", "backend.app_entry:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "backend.main_app:app", "--host", "0.0.0.0", "--port", "8080"]
