@@ -9,10 +9,12 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # アプリコード
 COPY backend/ /app/backend/
 COPY rag_core/ /app/rag_core/
-COPY data/ /app/data/
+
+# data フォルダは backend 配下にあるので修正
+COPY backend/data/ /app/data/
 
 # 学習済みベクトルストアを同梱（local固定で使用）
-# COPY vectorstore/ /app/vectorstore/   # ← 存在しない場合はコメントアウト
+# COPY vectorstore/ /app/vectorstore/   # 存在しないので一旦コメントアウト
 
 EXPOSE 8080
 CMD ["uvicorn", "backend.main_app:app", "--host", "0.0.0.0", "--port", "8080"]
