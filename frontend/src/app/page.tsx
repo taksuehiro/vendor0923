@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { searchVendors } from "@/lib/searchApi";
 
 
 export default function Page() {
@@ -10,6 +11,13 @@ export default function Page() {
   const onSearch = async () => {
     setErr(null);
     try {
+      const json = await searchVendors(q);
+      setData(json);
+    } catch (e: any) {
+      setErr(e.message);
+    }
+  };
+
   return (
     <main className="p-6">
       <div className="flex gap-2">
