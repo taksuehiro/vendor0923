@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KBStats, Vendor } from "@/types";
-import type { SearchHit } from "@/types";
-import { searchApi } from "@/lib/fetcher";
+import { searchApi, type SearchHit } from "@/lib/fetcher";
 
 // 型定義
 interface SearchResultData {
@@ -82,18 +81,22 @@ export default function MainPage() {
     setSearchLoading(true);
     try {
       // RAG API呼び出し
-      const { hits } = await searchApi({ query }).catch(() => ({ hits: [] as SearchHit[] }));
+      const { status, hits, raw } = await searchApi({
+        query,
+        k: 8,
+        use_mmr: false,
+      });
 
-      if (!hits.length) {
-        throw new Error("検索結果がありません");
+      if (status !== "ok") {
+        throw new Error("検索APIがエラーを返しました");
       }
 
       // APIレスポンスをSearchResultData形式に変換
       const searchResult: SearchResultData = {
-        result: hits.map((hit: SearchHit) => 
+        result: hits.map(hit => 
           `**${hit.title}** (スコア: ${((hit.score || 0) * 100).toFixed(1)}%)\n${hit.snippet || ''}`
         ).join('\n\n'),
-        source_documents: hits.map((hit: SearchHit) => ({
+        source_documents: hits.map(hit => ({
           page_content: hit.snippet || '',
           metadata: {
             vendor_id: hit.id,
@@ -127,7 +130,7 @@ export default function MainPage() {
         {
           id: "V-LiberCraft",
           name: "LiberCraft",
-          status: "interviewed",
+          status: "面談済",
           listed: false,
           type: "スクラッチ",
           category: ["スクラッチ"],
@@ -153,7 +156,7 @@ export default function MainPage() {
         {
           id: "V-TechCorp",
           name: "TechCorp",
-          status: "not_interviewed",
+          status: "未面談",
           listed: true,
           type: "SaaS",
           category: ["SaaS"],
