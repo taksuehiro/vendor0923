@@ -1,14 +1,7 @@
-// frontend/next.config.js
-const isCI = !!process.env.CI || !!process.env.AMPLIFY_BRANCH;
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: { ignoreBuildErrors: isCI },
-  // ↓ これを追加
-  trailingSlash: false,
-  skipTrailingSlashRedirect: true,
+  output: 'export',
+  images: { unoptimized: true },
+  eslint: { ignoreDuringBuilds: true },
 };
-
 module.exports = nextConfig;
