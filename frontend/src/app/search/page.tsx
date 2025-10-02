@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 import { searchApi } from "@/lib/fetcher";
-import type { SearchHit, ResponseMetadata } from "@/types";
+import type { SearchHit } from "@/types";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
-  const [meta, setMeta] = useState<ResponseMetadata | undefined>(undefined);
+  const [meta, setMeta] = useState<any | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
@@ -16,7 +16,8 @@ export default function SearchPage() {
     try {
       const res = await searchApi({ query });
       setHits(res.hits);
-      setMeta(res.metadata);
+      // metadata は存在しないため削除
+      setMeta(undefined);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
