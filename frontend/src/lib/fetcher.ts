@@ -1,43 +1,36 @@
-import type { SearchResponse, SearchHit, ResponseMetadata } from "@/types";
+// frontend/src/lib/fetcher.ts
+export type SearchHit = {
+  id: string;
+  title: string;
+  score?: number;
+  snippet?: string;
+  // 必要なら他のフィールドも追加
+};
 
-type SearchBody = { query: string; k?: number; use_mmr?: boolean };
+export type SearchResponse = {
+  status: "ok" | "error";
+  hits: SearchHit[];
+  raw: any; // デバッグ用に素のレスポンスも返す
+};
 
-export async function searchApi(body: SearchBody): Promise<SearchResponse> {
-  const base = process.env.NEXT_PUBLIC_API_BASE!;
+export async function searchApi(
+  body: Record<string, any>,
+  base = process.env.NEXT_PUBLIC_API_BASE!
+): Promise<SearchResponse> {
   const res = await fetch(`${base}/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "omit",
+    credentials: "omit", // CORSの想定と一致させる
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`API ${res.status} ${res.statusText}: ${text.slice(0,200)}`);
-  }
 
-  const json = (await res.json()) as unknown;
-  const root = (json ?? {}) as Record<string, unknown>;
-  const data = (root.data ?? {}) as Record<string, unknown>;
+  // JSON化に失敗してもUIが死なないようにフォールバック
+  const json = await res.json().catch(() => ({} as any));
 
-  const rawHits =
-    Array.isArray(root.hits)
-      ? (root.hits as unknown[])
-      : Array.isArray(data.hits as unknown[])
-      ? ((data.hits as unknown[]))
-      : [];
+  const status: "ok" | "error" =
+    (json?.metadata?.status as any) ?? (res.ok ? "ok" : "error");
 
-  const hits: SearchHit[] = rawHits.map((h) => {
-    const r = (h ?? {}) as Record<string, unknown>;
-    return {
-      id: String(r.id ?? ""),
-      title: String(r.title ?? ""),
-      score: typeof r.score === "number" ? r.score : 0,
-      snippet: typeof r.snippet === "string" ? r.snippet : "",
-      url: typeof r.url === "string" ? r.url : undefined,
-      status: typeof r.status === "string" ? r.status : undefined,
-    };
-  });
+  const hits: SearchHit[] = Array.isArray(json?.hits) ? json.hits : [];
 
-  const metadata = (root.metadata ?? data.metadata) as ResponseMetadata | undefined;
-  return { hits, metadata };
+  return { status, hits, raw: json };
 }
