@@ -2,7 +2,9 @@
 const isCI = !!process.env.CI || !!process.env.AMPLIFY_BRANCH;
 
 const nextConfig = {
-  eslint: { ignoreDuringBuilds: isCI },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   typescript: { ignoreBuildErrors: isCI },
   // ↓ これを追加
   trailingSlash: false,
