@@ -2,6 +2,6 @@
 const nextConfig = {
   output: 'export',
   images: { unoptimized: true },
-  eslint: { ignoreDuringBuilds: true }, // ← 追加：CIのLintエラーで落とさない
+  eslint: { ignoreDuringBuilds: true }, // CIのLintエラーを無視
 };
 module.exports = nextConfig;
