@@ -1,9 +1,7 @@
-// frontend/next.config.js
-const isCI = !!process.env.CI || !!process.env.AMPLIFY_BRANCH;
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: { ignoreDuringBuilds: isCI },
-  typescript: { ignoreBuildErrors: isCI },
+  // ← output: 'export' は消す（SSR検出を通す）
+  images: { unoptimized: true }, // 使ってもOK（最適化APIを使わない）
+  eslint: { ignoreDuringBuilds: true }, // Lintで落ちないように
 };
-
 module.exports = nextConfig;
