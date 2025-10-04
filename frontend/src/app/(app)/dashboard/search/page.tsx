@@ -37,6 +37,10 @@ export default function SearchPage() {
         throw new Error(`API ${res.status}: ${text || res.statusText}`);
       }
       const json = await res.json();
+      
+      // APIレスポンスをコンソールに出力
+      console.log("API Response:", json);
+      
       // いくつかの形に耐える防御的マッピング
       const rawResults =
         json?.hits ??

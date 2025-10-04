@@ -30,6 +30,9 @@ export async function searchApi(
 
   // JSON化に失敗してもUIが死なないようにフォールバック
   const json = await res.json().catch(() => ({} as any));
+  
+  // APIレスポンスをコンソールに出力
+  console.log("API Response:", json);
 
   const status: "ok" | "error" =
     (json?.metadata?.status as any) ?? (res.ok ? "ok" : "error");

@@ -13,6 +13,10 @@ export async function searchVendors(query: string) {
     throw new Error(`Search failed: ${res.status} ${text}`);
   }
   const data = await res.json(); // { results: [...] }
+  
+  // APIレスポンスをコンソールに出力
+  console.log("API Response:", data);
+  
   const normalizedResults = normalizeSearchResults(data.results || []);
   return { ...data, results: normalizedResults };
 }
