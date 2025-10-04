@@ -1,15 +1,6 @@
 "use client";
 import { useState } from "react";
-
-type Hit = {
-  id?: string;
-  title?: string;
-  snippet?: string;
-  score?: number;
-  scorePct?: number;
-  url?: string;
-  [k: string]: any;
-};
+import { ViewResult } from "@/types";
 
 export default function SearchPage() {
   const [q, setQ] = useState("");

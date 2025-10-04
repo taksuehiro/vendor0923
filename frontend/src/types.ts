@@ -68,6 +68,15 @@ export interface SearchResult {
   };
 }
 
+// ViewResult interface for search results display
+export interface ViewResult {
+  id: number;
+  text: string;
+  scorePct: number;   // 表示用の正規化済みスコア
+  rawScore: number;   // APIから返る生スコア
+  metadata?: any;
+}
+
 // VendorWithDetails interface for browse page
 export interface VendorWithDetails extends Vendor {
   url?: string;
