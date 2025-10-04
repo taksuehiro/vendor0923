@@ -1,5 +1,4 @@
 // frontend/src/lib/fetcher.ts
-import { apiBase } from "./apiBase";
 import { normalizeSearchResults, type ViewResult } from "./scoreNormalizer";
 
 export type SearchHit = {
@@ -19,7 +18,7 @@ export type SearchResponse = {
 
 export async function searchApi(
   body: Record<string, any>,
-  base = apiBase
+  base = process.env.NEXT_PUBLIC_API_BASE
 ): Promise<SearchResponse> {
   const res = await fetch(`${base}/search`, {
     method: "POST",

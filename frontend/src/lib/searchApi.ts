@@ -1,9 +1,8 @@
 // frontend/src/lib/searchApi.ts
-import { apiBase } from "./apiBase";
 import { normalizeSearchResults } from "./scoreNormalizer";
 
 export async function searchVendors(query: string) {
-  const res = await fetch(`${apiBase}/search`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query }),

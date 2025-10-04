@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import { apiBase } from "@/lib/apiBase";
-import { normalizeSearchResults, type ViewResult } from "@/lib/scoreNormalizer";
 
 type Hit = {
   id?: string;
@@ -27,31 +25,68 @@ export default function SearchPage() {
     setLoading(true);
     setHits([]);
     try {
-      const res = await fetch(`${apiBase}/search`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+      console.log("API_BASE", API_BASE);
+
+      const payload = {
+        query: q,
+        k: k,
+        use_mmr: useMmr,
+      };
+      console.log("POST /search payload", payload);
+
+      const res = await fetch(`${API_BASE}/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q, k, use_mmr: useMmr }),
+        body: JSON.stringify(payload),
       });
+      
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(`API ${res.status}: ${text || res.statusText}`);
       }
+      
       const json = await res.json();
+      console.log("POST /search response", json);
       
-      // APIレスポンスをコンソールに出力
-      console.log("API Response:", json);
-      
-      // いくつかの形に耐える防御的マッピング
-      const rawResults =
-        json?.hits ??
-        json?.results ??
-        (Array.isArray(json) ? json : []) ??
-        [];
-      const normalizedResults = normalizeSearchResults(rawResults);
-      setHits(normalizedResults);
+      // 安全ガード
+      const results: Array<{ text: string; score: number; metadata?: any }> =
+        Array.isArray(json?.results) ? json.results : [];
+
+      if (!results.length) {
+        setHits([]);
+        setRaw(json);
+        return;
+      }
+
+      // 距離→関連度(大きいほど良い) に変換して正規化
+      const scores = results.map(r => r.score);
+      const min = Math.min(...scores);
+      const max = Math.max(...scores);
+
+      const enriched = results.map((r, idx) => {
+        // min-max を 0..1 に正規化してから反転（距離が小さいほど良い → 関連度が大）
+        const norm = (r.score - min) / (max - min + 1e-6);
+        const rel = 1 - norm;
+        const scorePct = Math.round(rel * 1000) / 10; // 0.1%刻み
+        return {
+          id: idx + 1,
+          text: r.text,
+          metadata: r.metadata ?? {},
+          rawScore: r.score,
+          scorePct,
+        };
+      });
+
+      // 関連度の高い順に並べ替え
+      enriched.sort((a, b) => b.scorePct - a.scorePct);
+
+      setHits(enriched);
       setRaw(json);
     } catch (e: any) {
+      console.error("search error", e);
       setErr(e?.message ?? String(e));
+      setHits([]);
     } finally {
       setLoading(false);
     }
@@ -117,27 +152,17 @@ export default function SearchPage() {
               <li key={h.id ?? i} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">
-                    {h.title ?? h.metadata?.title ?? `Doc #${i + 1}`}
+                    Doc #{h.id}
                   </h3>
                   {typeof h.scorePct === "number" && (
                     <span className="text-xs opacity-70">
-                      score: {Number(h.scorePct).toFixed(1)}%
+                      score: {h.scorePct.toFixed(1)}%
                     </span>
                   )}
                 </div>
                 <p className="text-sm mt-2 line-clamp-3">
-                  {h.snippet ?? h.page_content ?? h.metadata?.summary ?? ""}
+                  {h.text}
                 </p>
-                {(h.url || h.metadata?.url) && (
-                  <a
-                    className="text-sm text-blue-600 hover:underline mt-2 inline-block"
-                    href={h.url ?? h.metadata?.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    ソースを開く
-                  </a>
-                )}
               </li>
             ))}
           </ul>
