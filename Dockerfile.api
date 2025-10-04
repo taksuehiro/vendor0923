@@ -2,6 +2,9 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# PYTHONPATHを設定してモジュール検索パスを追加
+ENV PYTHONPATH=/app
+
 # 依存関係をインストール
 COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
@@ -16,5 +19,5 @@ COPY backend/rag_core/ /app/rag_core/
 # ポート公開
 EXPOSE 8080
 
-# Uvicornで起動
+# Uvicornで起動（モジュール指定）
 CMD ["uvicorn", "backend.main_app:app", "--host", "0.0.0.0", "--port", "8080"]
