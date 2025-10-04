@@ -55,6 +55,7 @@ export interface SearchResult {
   snippet: string;
   content?: string;
   score?: number;
+  scorePct?: number;
   url?: string;
   status?: string;
   category?: string[];

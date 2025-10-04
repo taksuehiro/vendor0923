@@ -1,8 +1,12 @@
 // frontend/src/lib/fetcher.ts
+import { apiBase } from "./apiBase";
+import { normalizeSearchResults, type ViewResult } from "./scoreNormalizer";
+
 export type SearchHit = {
   id: string;
   title: string;
   score?: number;
+  scorePct?: number;
   snippet?: string;
   // 必要なら他のフィールドも追加
 };
@@ -15,7 +19,7 @@ export type SearchResponse = {
 
 export async function searchApi(
   body: Record<string, any>,
-  base = process.env.NEXT_PUBLIC_API_BASE!
+  base = apiBase
 ): Promise<SearchResponse> {
   const res = await fetch(`${base}/search`, {
     method: "POST",
@@ -30,7 +34,19 @@ export async function searchApi(
   const status: "ok" | "error" =
     (json?.metadata?.status as any) ?? (res.ok ? "ok" : "error");
 
-  const hits: SearchHit[] = Array.isArray(json?.hits) ? json.hits : [];
+  const rawHits = Array.isArray(json?.hits) ? json.hits : [];
+  const normalizedHits = normalizeSearchResults(rawHits);
 
-  return { status, hits, raw: json };
+  // ViewResultをSearchHitに変換
+  const searchHits: SearchHit[] = normalizedHits.map(hit => ({
+    id: hit.id || '',
+    title: hit.title || '',
+    score: hit.score,
+    scorePct: hit.scorePct,
+    snippet: hit.snippet || '',
+    url: hit.url,
+    status: hit.status
+  }));
+
+  return { status, hits: searchHits, raw: json };
 }

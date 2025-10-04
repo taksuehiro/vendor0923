@@ -234,7 +234,7 @@ export default function KBPage() {
                           {result.title}
                         </h4>
                         <div className="text-sm text-gray-500">
-                          スコア: {((result.score || 0) * 100).toFixed(1)}%
+                          スコア: {Number(result.scorePct || 0).toFixed(1)}%
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">

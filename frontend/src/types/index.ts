@@ -3,6 +3,7 @@ export type SearchHit = {
   id: string;
   title: string;
   score: number;
+  scorePct?: number;
   snippet: string;
   url?: string;
   // note: UI may reference status; it's optional on purpose

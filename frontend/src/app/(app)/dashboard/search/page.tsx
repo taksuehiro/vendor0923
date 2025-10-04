@@ -1,11 +1,14 @@
 "use client";
 import { useState } from "react";
+import { apiBase } from "@/lib/apiBase";
+import { normalizeSearchResults, type ViewResult } from "@/lib/scoreNormalizer";
 
 type Hit = {
   id?: string;
   title?: string;
   snippet?: string;
   score?: number;
+  scorePct?: number;
   url?: string;
   [k: string]: any;
 };
@@ -16,7 +19,7 @@ export default function SearchPage() {
   const [useMmr, setUseMmr] = useState(true);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [hits, setHits] = useState<Hit[]>([]);
+  const [hits, setHits] = useState<ViewResult[]>([]);
   const [raw, setRaw] = useState<any>(null);
 
   const onSearch = async () => {
@@ -24,9 +27,7 @@ export default function SearchPage() {
     setLoading(true);
     setHits([]);
     try {
-      const base = process.env.NEXT_PUBLIC_API_BASE;
-      if (!base) throw new Error("NEXT_PUBLIC_API_BASE が未設定です");
-      const res = await fetch(`${base}/search`, {
+      const res = await fetch(`${apiBase}/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: q, k, use_mmr: useMmr }),
@@ -37,12 +38,13 @@ export default function SearchPage() {
       }
       const json = await res.json();
       // いくつかの形に耐える防御的マッピング
-      const mapped: Hit[] =
+      const rawResults =
         json?.hits ??
         json?.results ??
         (Array.isArray(json) ? json : []) ??
         [];
-      setHits(mapped);
+      const normalizedResults = normalizeSearchResults(rawResults);
+      setHits(normalizedResults);
       setRaw(json);
     } catch (e: any) {
       setErr(e?.message ?? String(e));
@@ -113,9 +115,9 @@ export default function SearchPage() {
                   <h3 className="font-medium">
                     {h.title ?? h.metadata?.title ?? `Doc #${i + 1}`}
                   </h3>
-                  {typeof h.score === "number" && (
+                  {typeof h.scorePct === "number" && (
                     <span className="text-xs opacity-70">
-                      score: {(h.score * 100).toFixed(1)}%
+                      score: {Number(h.scorePct).toFixed(1)}%
                     </span>
                   )}
                 </div>
