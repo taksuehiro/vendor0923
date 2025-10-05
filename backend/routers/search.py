@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import logging
+import traceback
 from models import SearchRequest
 from rag_core.core import build_or_load_vectorstore, search_vendors
 
@@ -34,5 +35,7 @@ async def search(payload: SearchRequest):
         results = do_search(payload.query, k=payload.k or 5)
         return {"results": normalize(results)}
     except Exception as e:
+        print("=== /search failed ===")              # 👈 追加
+        traceback.print_exc()                        # 👈 追加（CloudWatchに出力）
         log.exception("search endpoint failed")
         return JSONResponse(status_code=500, content={"detail": str(e)})
