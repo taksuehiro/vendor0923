@@ -1,11 +1,21 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import logging
+import sys
 import traceback
 from models import SearchRequest
 from rag_core.core import build_or_load_vectorstore, search_vendors
 
 log = logging.getLogger(__name__)
+
+# --- 追加ここから ---
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s - %(message)s")
+handler.setFormatter(formatter)
+if not log.handlers:
+    log.addHandler(handler)
+log.setLevel(logging.INFO)
+# --- 追加ここまで ---
 router = APIRouter()
 
 # Global vectorstore instance
