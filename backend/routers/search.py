@@ -35,7 +35,7 @@ async def search(payload: SearchRequest):
         results = do_search(payload.query, k=payload.k or 5)
         return {"results": normalize(results)}
     except Exception as e:
-        print("=== /search failed ===")              # 👈 追加
-        traceback.print_exc()                        # 👈 追加（CloudWatchに出力）
-        log.exception("search endpoint failed")
+        import traceback
+        tb = traceback.format_exc()
+        log.error(f"search endpoint failed: {e}\n{tb}")
         return JSONResponse(status_code=500, content={"detail": str(e)})
