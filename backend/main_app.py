@@ -1,27 +1,31 @@
+# backend/main_app.py
 import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.search import router as search_router
-from rag_core.core import build_or_load_vectorstore, S3_BUCKET, S3_PREFIX, BEDROCK_MODEL_ID
+from rag_core.core import build_or_load_vectorstore  # ← 余計な定数importを削除
 
 log = logging.getLogger(__name__)
-
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
-    """アプリ起動時にS3からFAISSインデックスをロード"""
-    # 設定確認ログを追加
-    log.info("CONFIG: bucket=%s prefix=%s model=%s region=%s",
-             S3_BUCKET, S3_PREFIX, BEDROCK_MODEL_ID, os.getenv("AWS_REGION"))
-    
+    # 起動時に設定を明示
+    log.info(
+        "CONFIG(startup) bucket=%s prefix=%s model=%s region=%s",
+        os.getenv("S3_BUCKET_NAME") or os.getenv("VECTORSTORE_S3_BUCKET"),
+        os.getenv("S3_PREFIX") or os.getenv("VECTORSTORE_S3_PREFIX"),
+        os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID"),
+        os.getenv("AWS_REGION"),
+    )
     try:
         build_or_load_vectorstore()
         log.info("✅ FAISS vectorstore loaded successfully")
     except Exception as e:
-        log.error(f"❌ Failed to load FAISS vectorstore: {e}")
-        raise e
+        log.error("❌ Failed to load FAISS vectorstore: %s", e)
+        # ここでraiseしておくと致命時は起動させない判断も可
+        # raise e
 
 app.add_middleware(
     CORSMiddleware,
