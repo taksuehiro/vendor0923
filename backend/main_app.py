@@ -3,7 +3,7 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers.search import router as search_router
+from backend.routers.search import router as search_router
 from rag_core.core import build_or_load_vectorstore  # ← 余計な定数importを削除
 
 log = logging.getLogger(__name__)
