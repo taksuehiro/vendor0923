@@ -1,25 +1,7 @@
-FROM python:3.10-slim
-
+FROM python:3.11-slim
 WORKDIR /app
+COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# PYTHONPATHを設定してモジュール検索パスを追加
-ENV PYTHONPATH=/app
-
-# 依存関係
-COPY backend/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
-
-# アプリコード
-COPY backend/ /app/backend/
-
-# rag_core も backend 配下にある
-COPY backend/rag_core/ /app/rag_core/
-
-# data も backend 配下にある
-COPY backend/data/ /app/data/
-
-# 学習済みベクトルストア（local 固定用）
-# COPY vectorstore/ /app/vectorstore/   # 存在しないのでコメントアウト
-
-EXPOSE 8080
-CMD ["uvicorn", "backend.main_app:app", "--host", "0.0.0.0", "--port", "8080"]
+# 修正版 CMD（ログ出力を明示し、正しいモジュールを指定）
+CMD ["uvicorn", "backend.main_app:app", "--host", "0.0.0.0", "--port", "8080", "--log-level", "info", "--access-log"]
