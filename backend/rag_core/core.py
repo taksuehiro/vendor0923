@@ -1,80 +1,62 @@
-import os
-import tempfile
+import logging, os
 from pathlib import Path
-from typing import List, Optional
-
 import boto3
 from botocore.exceptions import ClientError
-
 from langchain_community.embeddings import BedrockEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
+from typing import List, Optional
 
-AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-1")
-BEDROCK_EMBEDDINGS_MODEL_ID = os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID", "amazon.titan-embed-text-v1")
-S3_BUCKET = os.getenv("S3_BUCKET_NAME")
-S3_PREFIX = os.getenv("S3_PREFIX", "vectorstores/dev")
+log = logging.getLogger(__name__)
 
-def init_embeddings() -> BedrockEmbeddings:
-    return BedrockEmbeddings(
-        model_id=BEDROCK_EMBEDDINGS_MODEL_ID,
-        region_name=AWS_REGION,
-    )
+S3_BUCKET = os.getenv("S3_BUCKET_NAME") or os.getenv("RAG_S3_BUCKET")
+S3_PREFIX = os.getenv("S3_PREFIX") or os.getenv("RAG_S3_PREFIX")
+_MODEL_RAW = os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID") or os.getenv("RAG_EMBEDDING") or "amazon.titan-embed-text-v2"
+BEDROCK_MODEL_ID = _MODEL_RAW.replace(":0", "")
 
-def _s3():
-    return boto3.client("s3", region_name=AWS_REGION)
+def _s3_download(bucket: str, key: str, dst: Path):
+    """S3からファイルをダウンロード"""
+    s3 = boto3.client("s3")
+    s3.download_file(bucket, key, str(dst))
 
 def _download_vectorstore_from_s3(local_dir: Path) -> bool:
-    if not S3_BUCKET:
+    log.info("S3 download start: bucket=%s prefix=%s local=%s", S3_BUCKET, S3_PREFIX, local_dir)
+    try:
+        local_dir.mkdir(parents=True, exist_ok=True)
+        for key in ("index.faiss","index.pkl"):
+            s3_key = f"{S3_PREFIX.rstrip('/')}/{key}"
+            dst = local_dir / key
+            _s3_download(S3_BUCKET, s3_key, dst)
+            log.info("S3 downloaded: s3://%s/%s -> %s (exists=%s size=%s)",
+                     S3_BUCKET, s3_key, dst, dst.exists(), dst.stat().st_size if dst.exists() else -1)
+        return True
+    except Exception:
+        log.exception("S3 download failed")
         return False
-    s3 = _s3()
-    keys = [f"{S3_PREFIX}/index.faiss", f"{S3_PREFIX}/index.pkl"]
-    ok_any = False
-    local_dir.mkdir(parents=True, exist_ok=True)
-    for key in keys:
-        try:
-            local_path = local_dir / Path(key).name
-            s3.download_file(S3_BUCKET, key, str(local_path))
-            ok_any = True
-        except ClientError as e:
-            if e.response.get("Error", {}).get("Code") != "404":
-                raise
-    return ok_any
 
-def _upload_vectorstore_to_s3(local_dir: Path):
-    if not S3_BUCKET:
-        return
-    s3 = _s3()
-    for name in ("index.faiss", "index.pkl"):
-        p = local_dir / name
-        if p.exists():
-            s3.upload_file(str(p), S3_BUCKET, f"{S3_PREFIX}/{name}")
-
-def build_or_load_vectorstore(docs: Optional[List[Document]] = None) -> FAISS:
-    embeddings = init_embeddings()
-    with tempfile.TemporaryDirectory() as td:
-        local = Path(td)
+def build_or_load_vectorstore(docs=None):
+    try:
+        local = Path("/tmp/vectorstore")
         has_remote = _download_vectorstore_from_s3(local)
-
+        embeddings = BedrockEmbeddings(model_id=BEDROCK_MODEL_ID)
         if has_remote:
             vs = FAISS.load_local(local, embeddings, allow_dangerous_deserialization=True)
+            log.info("FAISS loaded from %s (model=%s)", local, BEDROCK_MODEL_ID)
             return vs
+        if docs:
+            vs = FAISS.from_documents(docs, embeddings)
+            log.info("FAISS built from docs (model=%s)", BEDROCK_MODEL_ID)
+            return vs
+        raise RuntimeError("No vectorstore available (S3 download failed and no docs)")
+    except Exception:
+        log.exception("FAISS init failed")
+        raise
 
-        if not docs:
-            raise RuntimeError("No existing vectorstore in S3 and no docs provided to build one.")
-
-        vs = FAISS.from_documents(docs, embeddings)
-        vs.save_local(local)
-        _upload_vectorstore_to_s3(local)
-        return vs
-
-def search_vendors(vs: FAISS, query: str, k: int = 5):
-    results = vs.similarity_search_with_score(query, k=k)
-    payload = []
-    for doc, score in results:
-        payload.append({
-            "text": doc.page_content,
-            "score": float(score),
-            "metadata": doc.metadata or {},
-        })
-    return payload
+def search_vendors(vs, query: str, k: int = 5):
+    try:
+        results = vs.similarity_search_with_score(query, k=k)
+        log.info("search ok: query=%r hits=%d", query, len(results))
+        return results
+    except Exception:
+        log.exception("search failed: query=%r", query)
+        raise

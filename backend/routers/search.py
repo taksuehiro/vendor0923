@@ -1,49 +1,38 @@
-# backend/routers/search.py
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from vectorstore import VSTORE
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+import logging
+from models import SearchRequest
+from rag_core.core import build_or_load_vectorstore, search_vendors
 
+log = logging.getLogger(__name__)
 router = APIRouter()
 
-class SearchRequest(BaseModel):
-    query: str
-    k: int = 8
-    use_mmr: bool = True
+# Global vectorstore instance
+_vs = None
+
+def do_search(query: str, k: int = 5):
+    """Search function that uses the global vectorstore"""
+    global _vs
+    if _vs is None:
+        _vs = build_or_load_vectorstore()
+    return search_vendors(_vs, query, k)
+
+def normalize(results):
+    """Normalize search results to expected format"""
+    normalized = []
+    for doc, score in results:
+        normalized.append({
+            "text": doc.page_content,
+            "score": float(score),
+            "metadata": doc.metadata or {}
+        })
+    return normalized
 
 @router.post("/search")
-async def search(req: SearchRequest):
-    if not req.query.strip():
-        raise HTTPException(status_code=400, detail="query is empty")
-    
-    if VSTORE is None:
-        raise HTTPException(status_code=500, detail="Vector store not loaded")
-    
+async def search(payload: SearchRequest):
     try:
-        if req.use_mmr:
-            # MMR検索
-            docs_with_scores = VSTORE.max_marginal_relevance_search_with_score(
-                query=req.query,
-                k=req.k
-            )
-        else:
-            # 類似度検索
-            docs_with_scores = VSTORE.similarity_search_with_score(
-                query=req.query,
-                k=req.k
-            )
+        results = do_search(payload.query, k=payload.k or 5)
+        return {"results": normalize(results)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {e}")
-    
-    # 結果を指示に従った形式で返す
-    results = []
-    for doc, distance in docs_with_scores:
-        # 距離を類似度（0〜1）に変換
-        score = 1.0 / (1.0 + distance)
-        
-        results.append({
-            "text": doc.page_content,
-            "metadata": doc.metadata or {},
-            "score": score
-        })
-    
-    return {"results": results}
+        log.exception("search endpoint failed")
+        return JSONResponse(status_code=500, content={"detail": str(e)})
