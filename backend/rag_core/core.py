@@ -34,6 +34,7 @@ def build_or_load_vectorstore(docs=None):
         log.info("=== RAG init start ===")
         log.info("CONFIG bucket=%s prefix=%s model=%s region=%s", bucket, prefix, model_id, region)
         print(f"CONFIG bucket={bucket} prefix={prefix} model={model_id} region={region}")
+        print(f"✅ Normalized model_id: {model_id}")
 
         if not bucket or not prefix:
             raise RuntimeError("Missing S3 config: S3_BUCKET_NAME / S3_PREFIX")
