@@ -1,5 +1,5 @@
 {
-  "family": "vendor0923-task",
+  "family": "vendor1007-task",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
@@ -8,8 +8,8 @@
   "taskRoleArn": "arn:aws:iam::067717894185:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
-      "name": "vendor0923-api",
-      "image": "067717894185.dkr.ecr.ap-northeast-1.amazonaws.com/vendor0923-api:latest",
+      "name": "vendor1007-api",
+      "image": "067717894185.dkr.ecr.ap-northeast-1.amazonaws.com/vendor1007-api:latest",
       "portMappings": [
         {
           "containerPort": 8000,
@@ -25,7 +25,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/vendor0923-api",
+          "awslogs-group": "/ecs/vendor1007-api",
           "awslogs-region": "ap-northeast-1",
           "awslogs-stream-prefix": "ecs"
         }
