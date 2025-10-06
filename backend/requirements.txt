@@ -11,4 +11,7 @@ langchain-community>=0.2.0
 boto3==1.35.93
 openai
 
-
+# RAG dependencies
+langchain-community>=0.2.11
+faiss-cpu
+boto3
