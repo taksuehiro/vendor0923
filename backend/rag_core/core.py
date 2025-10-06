@@ -5,7 +5,6 @@ import traceback
 from pathlib import Path
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import BedrockEmbeddings
-from . import __init__  # noqa: F401
 from backend.rag_core_s3 import ensure_vectorstore_local
 
 log = logging.getLogger(__name__)
