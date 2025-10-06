@@ -4,7 +4,7 @@ import logging
 import sys
 import traceback
 from backend.models import SearchRequest
-from rag_core.core import build_or_load_vectorstore, search_vendors
+from backend.rag_core.core import build_or_load_vectorstore, search_vendors
 
 log = logging.getLogger(__name__)
 
