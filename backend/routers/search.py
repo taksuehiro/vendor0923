@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 import logging
 import sys
 import traceback
-from models import SearchRequest
+from backend.models import SearchRequest
 from rag_core.core import build_or_load_vectorstore, search_vendors
 
 log = logging.getLogger(__name__)
