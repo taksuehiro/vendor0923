@@ -4,7 +4,7 @@ import os
 
 class BedrockEmbeddingsV2:
     def __init__(self, model_id=None, region_name="ap-northeast-1"):
-        self.model_id = model_id or os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID", "amazon.titan-embed-text-v2")
+        self.model_id = model_id or os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID", "amazon.titan-embed-text-v1")
         self.client = boto3.client("bedrock-runtime", region_name=region_name)
 
     def embed_query(self, text: str):
