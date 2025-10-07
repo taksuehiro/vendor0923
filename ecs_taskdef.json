@@ -12,7 +12,7 @@
       "image": "067717894185.dkr.ecr.ap-northeast-1.amazonaws.com/vendor1007-2-api:latest",
       "portMappings": [
         {
-          "containerPort": 8000,
+          "containerPort": 8080,
           "protocol": "tcp"
         }
       ],
