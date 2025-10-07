@@ -12,7 +12,7 @@ def build_faiss_index():
     bucket = os.getenv("S3_BUCKET_NAME", "vendor-rag-bucket")
     prefix = os.getenv("S3_PREFIX", "faiss/index")
     region = os.getenv("AWS_REGION", "ap-northeast-1")
-    model_id = os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID", "amazon.titan-embed-text-v2")
+    model_id = os.getenv("BEDROCK_EMBEDDINGS_MODEL_ID", "amazon.titan-embed-text-v1")
     local_dir = "/tmp/vectorstore"
 
     Path(local_dir).mkdir(parents=True, exist_ok=True)
