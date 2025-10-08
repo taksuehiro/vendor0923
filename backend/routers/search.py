@@ -43,7 +43,7 @@ def normalize(results):
 async def search(payload: SearchRequest):
     try:
         results = do_search(payload.query, k=payload.k or 5)
-        return {"results": normalize(results)}
+        return {"results": results}  # normalize()を削除し、変換済みスコアをそのまま返す
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
