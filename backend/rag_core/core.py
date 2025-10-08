@@ -66,7 +66,15 @@ def build_or_load_vectorstore(docs=None):
 
 def search_vendors(vs, query: str, k: int = 5):
     try:
-        results = vs.similarity_search_with_score(query, k=k)
+        raw_results = vs.similarity_search_with_score(query, k=k)
+        # FAISSのL2距離²を類似度スコアに変換
+        results = []
+        for doc, score in raw_results:
+            # 距離²を距離に変換してから類似度に反転
+            distance = score ** 0.5  # 距離² → 距離
+            similarity = 1 / (1 + distance)  # 距離0→1.0、距離が遠いほど0に近づく
+            results.append((doc, similarity))
+        
         log.info("search ok: query=%r hits=%d", query, len(results))
         return results
     except Exception:
