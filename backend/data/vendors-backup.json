@@ -4,32 +4,12 @@
     "name": "LiberCraft",
     "type": "スクラッチ",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "機械学習",
-      "最適化",
-      "LLM導入支援"
-    ],
-    "offerings": {
-      "products": [
-        "Dify支援"
-      ],
-      "description_short": "LLM導入/最適化のスクラッチ支援"
-    },
-    "delivery": {
-      "deployment": "ハイブリッド",
-      "is_scratch": true
-    },
-    "commercials": {
-      "man_month_jpy": "200-300"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [],
-      "employees_band": "1-10"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["機械学習", "最適化", "LLM導入支援"],
+    "offerings": { "products": ["Dify支援"], "description_short": "LLM導入/最適化のスクラッチ支援" },
+    "delivery": { "deployment": "ハイブリッド", "is_scratch": true },
+    "commercials": { "man_month_jpy": "200-300" },
+    "corporate": { "listed": "未上場", "investors": [], "employees_band": "1-10" },
     "notes": "メンバーの大部分はデータサイエンティスト"
   },
   {
@@ -37,31 +17,12 @@
     "name": "Weel",
     "type": "スクラッチ",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "受注処理AI",
-      "部分自動化"
-    ],
-    "offerings": {
-      "products": [],
-      "description_short": "受注処理の自動化/協働可能"
-    },
-    "delivery": {
-      "deployment": "ハイブリッド",
-      "is_scratch": true
-    },
-    "commercials": {
-      "man_month_jpy": "300程度"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [
-        "出資あり"
-      ],
-      "employees_band": "11-50"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["受注処理AI", "部分自動化"],
+    "offerings": { "products": [], "description_short": "受注処理の自動化/協働可能" },
+    "delivery": { "deployment": "ハイブリッド", "is_scratch": true },
+    "commercials": { "man_month_jpy": "300程度" },
+    "corporate": { "listed": "未上場", "investors": ["出資あり"], "employees_band": "11-50" },
     "notes": "外販目的で協働可能。研究開発能力が高そう"
   },
   {
@@ -69,31 +30,12 @@
     "name": "LaboroAI",
     "type": "スクラッチ",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "製造最適化",
-      "機械学習",
-      "生成AI",
-      "VLM"
-    ],
-    "offerings": {
-      "products": [],
-      "description_short": "製造最適化/生成AIの高度案件"
-    },
-    "delivery": {
-      "deployment": "ハイブリッド",
-      "is_scratch": true
-    },
-    "commercials": {
-      "man_month_jpy": "400-500"
-    },
-    "corporate": {
-      "listed": "上場",
-      "investors": [],
-      "employees_band": "51-200"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["製造最適化", "機械学習", "生成AI", "VLM"],
+    "offerings": { "products": [], "description_short": "製造最適化/生成AIの高度案件" },
+    "delivery": { "deployment": "ハイブリッド", "is_scratch": true },
+    "commercials": { "man_month_jpy": "400-500" },
+    "corporate": { "listed": "上場", "investors": [], "employees_band": "51-200" },
     "notes": "実績豊富だがコスト高め。業務理解力が高く全体的にレベルが高い（提案受けた経験あり）"
   },
   {
@@ -101,35 +43,12 @@
     "name": "NUCO",
     "type": "スクラッチ",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "需要予測",
-      "価格予測",
-      "従来ML",
-      "LLM"
-    ],
-    "offerings": {
-      "products": [
-        "従来ML＋LLM"
-      ],
-      "description_short": "低価格スクラッチ/親会社支援で体制安定"
-    },
-    "delivery": {
-      "deployment": "ハイブリッド",
-      "is_scratch": true
-    },
-    "commercials": {
-      "man_month_jpy": "100-150"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [
-        "出資あり"
-      ],
-      "employees_band": "51-200"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["需要予測", "価格予測", "従来ML", "LLM"],
+    "offerings": { "products": ["従来ML＋LLM"], "description_short": "低価格スクラッチ/親会社支援で体制安定" },
+    "delivery": { "deployment": "ハイブリッド", "is_scratch": true },
+    "commercials": { "man_month_jpy": "100-150" },
+    "corporate": { "listed": "未上場", "investors": ["出資あり"], "employees_band": "51-200" },
     "notes": "低価格スクラッチ、人員の殆どがエンジニア。機械学習に強み"
   },
   {
@@ -137,31 +56,12 @@
     "name": "TANREN",
     "type": "SaaS",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "人材育成",
-      "営業トレーニングAI"
-    ],
-    "offerings": {
-      "products": [
-        "販売員強化AI"
-      ],
-      "description_short": "動画/音声をAI評価する教育SaaS"
-    },
-    "delivery": {
-      "deployment": "SaaS",
-      "is_scratch": false
-    },
-    "commercials": {
-      "man_month_jpy": "-"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [],
-      "employees_band": "1-10"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["人材育成", "営業トレーニングAI"],
+    "offerings": { "products": ["販売員強化AI"], "description_short": "動画/音声をAI評価する教育SaaS" },
+    "delivery": { "deployment": "SaaS", "is_scratch": false },
+    "commercials": { "man_month_jpy": "-" },
+    "corporate": { "listed": "未上場", "investors": [], "employees_band": "1-10" },
     "notes": "熱意強く教育観点でユニーク。バイプコーディング研修可能"
   },
   {
@@ -169,33 +69,12 @@
     "name": "Eriza",
     "type": "SaaS",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "ノーコード開発",
-      "LLM導入支援"
-    ],
-    "offerings": {
-      "products": [
-        "自社ノーコード製品"
-      ],
-      "description_short": "Dify的な製品を自社開発。UI自動生成など"
-    },
-    "delivery": {
-      "deployment": "SaaS",
-      "is_scratch": false
-    },
-    "commercials": {
-      "man_month_jpy": "500近辺"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [
-        "MS系と競合懸念?"
-      ],
-      "employees_band": "51-200"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["ノーコード開発", "LLM導入支援"],
+    "offerings": { "products": ["自社ノーコード製品"], "description_short": "Dify的な製品を自社開発。UI自動生成など" },
+    "delivery": { "deployment": "SaaS", "is_scratch": false },
+    "commercials": { "man_month_jpy": "500近辺" },
+    "corporate": { "listed": "未上場", "investors": ["MS系と競合懸念?"], "employees_band": "51-200" },
     "notes": "マーケ戦略やや心配"
   },
   {
@@ -203,29 +82,12 @@
     "name": "Fusic",
     "type": "SI",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "AWS運用",
-      "Web＋AI統合"
-    ],
-    "offerings": {
-      "products": [],
-      "description_short": "AWSに強み。SI色が強い"
-    },
-    "delivery": {
-      "deployment": "ハイブリッド",
-      "is_scratch": true
-    },
-    "commercials": {
-      "man_month_jpy": "200-300万"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [],
-      "employees_band": "51-200"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["AWS運用", "Web＋AI統合"],
+    "offerings": { "products": [], "description_short": "AWSに強み。SI色が強い" },
+    "delivery": { "deployment": "ハイブリッド", "is_scratch": true },
+    "commercials": { "man_month_jpy": "200-300万" },
+    "corporate": { "listed": "未上場", "investors": [], "employees_band": "51-200" },
     "notes": "AWS運用およびSI能力が充実。営業人員〇"
   },
   {
@@ -233,32 +95,12 @@
     "name": "LightBlue",
     "type": "SaaS",
     "website": "",
-    "engagement": {
-      "status": "面談済"
-    },
-    "capabilities": [
-      "LLM製品提供"
-    ],
-    "offerings": {
-      "products": [
-        "アプリをLLMで作成する"
-      ],
-      "description_short": "LLM製品SaaS"
-    },
-    "delivery": {
-      "deployment": "SaaS",
-      "is_scratch": false
-    },
-    "commercials": {
-      "man_month_jpy": "-"
-    },
-    "corporate": {
-      "listed": "未上場",
-      "investors": [
-        "清水建設"
-      ],
-      "employees_band": "11-50"
-    },
+    "engagement": { "status": "面談済" },
+    "capabilities": ["LLM製品提供"],
+    "offerings": { "products": ["アプリをLLMで作成する"], "description_short": "LLM製品SaaS" },
+    "delivery": { "deployment": "SaaS", "is_scratch": false },
+    "commercials": { "man_month_jpy": "-" },
+    "corporate": { "listed": "未上場", "investors": ["清水建設"], "employees_band": "11-50" },
     "notes": "月額利用料1,500円の記述あり。営業人員〇"
   },
   {
@@ -605,24 +447,26 @@
     "type": "スクラッチ",
     "website": "https://kpmg.com/jp/ja/home.html",
     "engagement": {
-      "status": "未面談"
+      "status": "面談済"
     },
     "capabilities": [
-      "AI",
-      "コンサルティング"
+      "セキュリティ,ガバナンスやルール造りでのご支援(特にATSG)"
     ],
     "offerings": {
       "products": [],
-      "description_short": "すべての産業革命はプロフェッショナルサービスを変革してきました。AIも例外ではありません"
+      "description_short": "セキュリティ、ガバナンスやルール造りでのご支援(特にATSG)"
     },
     "delivery": {
-      "deployment": ""
+      "deployment": "ハイブリッド",
+      "is_scratch": true
     },
-    "commercials": {},
+    "commercials": {
+      "man_month_jpy": "-"
+    },
     "corporate": {
-      "listed": "未上場",
+      "listed": "不明",
       "investors": [],
-      "employees_band": "1000+"
+      "employees_band": ""
     },
     "notes": ""
   },
@@ -1684,6 +1528,60 @@
     "notes": ""
   },
   {
+    "vendor_id": "V-NTTドコモ",
+    "name": "株式会社NTTドコモ",
+    "type": "スクラッチ",
+    "website": "https://www.nttdocomo.co.jp/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "自然言語処理"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "通信インフラを活用した大規模な文書処理・要約サービス"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-NTTコミュニケーションズ",
+    "name": "NTTコミュニケーションズ株式会社",
+    "type": "スクラッチ",
+    "website": "https://www.ntt.com/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "自然言語処理"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "企業向けの包括的な文書処理ソリューション"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
     "vendor_id": "V-ソフトバンク",
     "name": "ソフトバンク株式会社",
     "type": "SaaS",
@@ -1839,7 +1737,7 @@
     ],
     "offerings": {
       "products": [],
-      "description_short": "マイクロソフトから独立した日本語AI特化企業"
+      "description_short": "日本語対話AIと文書生成技術の統合"
     },
     "delivery": {
       "deployment": ""
@@ -2118,7 +2016,7 @@
       "products": [
         "Lumada"
       ],
-      "description_short": "AIプラットフォーム「Lumada」による産業DX推進"
+      "description_short": "製造業向けAI活用に強み"
     },
     "delivery": {
       "deployment": ""
@@ -2145,7 +2043,7 @@
     ],
     "offerings": {
       "products": [],
-      "description_short": "大手企業の支援実績が豊富で、戦略的なコンサルに強み"
+      "description_short": "自律型AI、デジタル戦略コンサルティング"
     },
     "delivery": {
       "deployment": ""
@@ -2199,7 +2097,34 @@
     ],
     "offerings": {
       "products": [],
-      "description_short": "2035年に向けて進化を続けるAIエージェントの活用支援"
+      "description_short": "生成AIコンサルティングサービス、AI戦略策定"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "1000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-KPMG",
+    "name": "KPMG",
+    "type": "スクラッチ",
+    "website": "https://kpmg.com/jp/ja/home.html",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "コンサルティング"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "AI戦略コンサルティング、データアナリティクス、デジタル監査"
     },
     "delivery": {
       "deployment": ""
@@ -2488,6 +2413,36 @@
     "notes": ""
   },
   {
+    "vendor_id": "V-オルツ",
+    "name": "オルツ（alt Inc.）",
+    "type": "",
+    "website": "https://alt.ai/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI"
+    ],
+    "offerings": {
+      "products": [
+        "A.I.VOICE"
+      ],
+      "description_short": "個人の分身となるAI技術を開発"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [
+        "エイベックス"
+      ],
+      "employees_band": "11-50"
+    },
+    "notes": ""
+  },
+  {
     "vendor_id": "V-Spiral.AI",
     "name": "Spiral.AI",
     "type": "",
@@ -2515,6 +2470,36 @@
       "employees_band": "11-50"
     },
     "notes": ""
+  },
+  {
+    "vendor_id": "V-rinna",
+    "name": "rinna株式会社",
+    "type": "",
+    "website": "https://rinna.co.jp/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "自然言語処理",
+      "LLM"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "マイクロソフトから独立した日本語AI特化企業"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [
+        "NTTドコモ"
+      ],
+      "employees_band": "11-50"
+    },
+    "notes": "日本マイクロソフトのAI部門から独立"
   },
   {
     "vendor_id": "V-エクサウィザーズ",
@@ -2765,6 +2750,277 @@
       "listed": "未上場",
       "investors": [],
       "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-IBM",
+    "name": "日本アイ・ビー・エム株式会社",
+    "type": "SaaS",
+    "website": "https://www.ibm.com/jp-ja",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI"
+    ],
+    "offerings": {
+      "products": [
+        "Watson"
+      ],
+      "description_short": "世界的なAI技術リーダー、Watson技術を活用"
+    },
+    "delivery": {
+      "deployment": "SaaS"
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "上場",
+      "investors": [],
+      "employees_band": "1000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-NTTコミュニケーションズ",
+    "name": "NTTコミュニケーションズ株式会社",
+    "type": "スクラッチ",
+    "website": "https://www.ntt.com/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "自然言語処理"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "企業向けAIソリューションの提供"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-NTTデータ",
+    "name": "NTTデータ",
+    "type": "スクラッチ",
+    "website": "https://www.nttdata.com/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "クラウド"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "総合ITサービス・システムインテグレーション"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-NEC",
+    "name": "日本電気株式会社（NEC）",
+    "type": "SaaS",
+    "website": "https://www.nec.com/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "国産のAIソリューションを国内のユーザー企業に提供"
+    },
+    "delivery": {
+      "deployment": "SaaS"
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-富士通",
+    "name": "富士通株式会社",
+    "type": "SaaS",
+    "website": "https://www.fujitsu.com/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "AIの社会実装で顧客のDXを推進"
+    },
+    "delivery": {
+      "deployment": "SaaS"
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-日立製作所",
+    "name": "株式会社日立製作所",
+    "type": "スクラッチ",
+    "website": "https://www.hitachi.co.jp/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "クラウド"
+    ],
+    "offerings": {
+      "products": [
+        "Lumada"
+      ],
+      "description_short": "AIプラットフォーム「Lumada」による産業DX推進"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "上場",
+      "investors": [],
+      "employees_band": "10000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-アクセンチュア",
+    "name": "アクセンチュア",
+    "type": "スクラッチ",
+    "website": "https://www.accenture.com/jp-ja",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "コンサルティング"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "大手企業の支援実績が豊富で、戦略的なコンサルに強み"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "上場",
+      "investors": [],
+      "employees_band": "1000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-デロイトトーマツコンサルティング（DTC）",
+    "name": "デロイト トーマツ コンサルティング（DTC）",
+    "type": "スクラッチ",
+    "website": "https://www2.deloitte.com/jp/ja.html",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "コンサルティング"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "経営戦略や業務戦略の立案などを経験したい方にはおすすめ"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "1000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-PwC Japan",
+    "name": "PwC Japan",
+    "type": "スクラッチ",
+    "website": "https://www.pwc.com/jp/",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "コンサルティング"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "2035年に向けて進化を続けるAIエージェントの活用支援"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "1000+"
+    },
+    "notes": ""
+  },
+  {
+    "vendor_id": "V-KPMG",
+    "name": "KPMG",
+    "type": "スクラッチ",
+    "website": "https://kpmg.com/jp/ja/home.html",
+    "engagement": {
+      "status": "未面談"
+    },
+    "capabilities": [
+      "AI",
+      "コンサルティング"
+    ],
+    "offerings": {
+      "products": [],
+      "description_short": "すべての産業革命はプロフェッショナルサービスを変革してきました。AIも例外ではありません"
+    },
+    "delivery": {
+      "deployment": ""
+    },
+    "commercials": {},
+    "corporate": {
+      "listed": "未上場",
+      "investors": [],
+      "employees_band": "1000+"
     },
     "notes": ""
   }
