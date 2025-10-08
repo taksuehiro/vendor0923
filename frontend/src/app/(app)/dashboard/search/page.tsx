@@ -50,16 +50,9 @@ export default function SearchPage() {
         return;
       }
 
-      // 距離→関連度(大きいほど良い) に変換して正規化
-      const scores = results.map(r => r.score);
-      const min = Math.min(...scores);
-      const max = Math.max(...scores);
-
+      // コサイン類似度の絶対値を0-100%に変換（min-max正規化を削除）
       const enriched = results.map((r, idx) => {
-        // min-max を 0..1 に正規化してから反転（距離が小さいほど良い → 関連度が大）
-        const norm = (r.score - min) / (max - min + 1e-6);
-        const rel = 1 - norm;
-        const scorePct = Math.round(rel * 1000) / 10; // 0.1%刻み
+        const scorePct = Math.round(Number(r.score) * 1000) / 10; // 0.832 → 83.2%
         return {
           id: idx + 1,
           text: r.text,

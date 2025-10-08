@@ -20,13 +20,10 @@ export type ViewResult = RawResult & { scorePct: number };
 export function normalizeSearchResults(results: RawResult[]): ViewResult[] {
   if (results.length === 0) return [];
   
-  const scores = results.map(r => Number(r.score));
-  const min = Math.min(...scores);
-  const max = Math.max(...scores);
-  
+  // コサイン類似度の絶対値を0-100%に変換（min-max正規化を削除）
   const normalized: ViewResult[] = results.map(r => ({
     ...r,
-    scorePct: (max > min) ? ((Number(r.score) - min) / (max - min)) * 100 : 100
+    scorePct: Math.round(Number(r.score) * 1000) / 10  // 0.832 → 83.2%
   }));
   
   // スコア降順でソート
