@@ -50,9 +50,11 @@ export default function SearchPage() {
         return;
       }
 
-      // コサイン類似度の絶対値を0-100%に変換（min-max正規化を削除）
+      // 距離を0〜1類似度に反転（FAISSの距離値 → 類似度変換）
       const enriched = results.map((r, idx) => {
-        const scorePct = Math.round(Number(r.score) * 1000) / 10; // 0.832 → 83.2%
+        // 距離を0〜1類似度に反転
+        const rel = 1 / (1 + Number(r.score));   // 距離0→1.0, 距離1→0.5, 距離10→0.09
+        const scorePct = Math.round(rel * 1000) / 10;  // 例: 0.832 → 83.2%
         return {
           id: idx + 1,
           text: r.text,
