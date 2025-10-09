@@ -20,7 +20,7 @@
         { "name": "S3_BUCKET_NAME", "value": "vendor-rag-bucket" },
         { "name": "S3_PREFIX", "value": "faiss/index" },
         { "name": "AWS_REGION", "value": "ap-northeast-1" },
-        { "name": "BEDROCK_EMBEDDINGS_MODEL_ID", "value": "amazon.titan-embed-text-v2" }
+        { "name": "BEDROCK_EMBEDDINGS_MODEL_ID", "value": "amazon.titan-embed-text-v1" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
