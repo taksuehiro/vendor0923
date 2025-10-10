@@ -18,3 +18,7 @@ class BedrockEmbeddingsV2:
 
     def embed_documents(self, texts):
         return [self.embed_query(t) for t in texts]
+
+    # 👇 FAISSから呼び出されるようにするための魔法の1行
+    def __call__(self, text: str):
+        return self.embed_query(text)

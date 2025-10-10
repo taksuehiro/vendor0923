@@ -24,3 +24,4 @@ class BedrockEmbeddings:
         return self.embed_query(text)
 
 
+

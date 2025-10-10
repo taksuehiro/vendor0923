@@ -4,7 +4,7 @@ import traceback
 from pathlib import Path
 import numpy as np
 from langchain_community.vectorstores import FAISS
-from backend.rag_core.bedrock_embeddings import BedrockEmbeddings
+from langchain_community.embeddings import BedrockEmbeddings
 from backend.rag_core_s3 import ensure_vectorstore_local
 
 log = logging.getLogger(__name__)
