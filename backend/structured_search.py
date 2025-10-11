@@ -223,9 +223,13 @@ def hybrid_search(
     return results
 
 
-def classify_query(query: str) -> Tuple[str, Dict[str, str], str]:
+def classify_query(query: str, use_llm: bool = False) -> Tuple[str, Dict[str, str], str]:
     """
     クエリを分類して検索タイプを決定
+    
+    Args:
+        query: ユーザークエリ
+        use_llm: LLMベースの分類を使用するか（デフォルト：False）
     
     Returns:
         tuple: (search_type, filters, semantic_query)
@@ -233,6 +237,22 @@ def classify_query(query: str) -> Tuple[str, Dict[str, str], str]:
             filters: 構造化フィルタ
             semantic_query: セマンティック検索クエリ
     """
+    # LLMベースの分類（オプション）
+    if use_llm:
+        try:
+            from backend.bedrock_llm import classify_query_with_llm
+            result = classify_query_with_llm(query)
+            
+            if result:
+                return (
+                    result.get("type", "semantic"),
+                    result.get("filters", {}),
+                    result.get("semantic_query", query)
+                )
+        except Exception as e:
+            log.warning(f"LLM classification failed, using rule-based: {e}")
+    
+    # ルールベースの分類（デフォルト）
     filters = detect_filters(query)
     semantic_part = extract_semantic_part(query)
     

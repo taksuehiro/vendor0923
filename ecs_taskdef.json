@@ -20,7 +20,9 @@
         { "name": "S3_BUCKET_NAME", "value": "vendor-rag-bucket" },
         { "name": "S3_PREFIX", "value": "vectorstore/prod" },
         { "name": "AWS_REGION", "value": "ap-northeast-1" },
-        { "name": "BEDROCK_EMBEDDINGS_MODEL_ID", "value": "amazon.titan-embed-text-v1" }
+        { "name": "BEDROCK_EMBEDDINGS_MODEL_ID", "value": "amazon.titan-embed-text-v1" },
+        { "name": "BEDROCK_LLM_MODEL_ID", "value": "anthropic.claude-3-haiku-20240307-v1:0" },
+        { "name": "USE_LLM_CLASSIFICATION", "value": "true" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

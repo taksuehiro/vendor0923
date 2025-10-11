@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import logging
+import os
 import sys
 import traceback
 from backend.models import SearchRequest
@@ -56,9 +57,12 @@ async def search(payload: SearchRequest):
         query = payload.query
         k = payload.k or 5
         
+        # LLMベースの分類を使用するかどうか（環境変数で制御）
+        use_llm_classification = os.getenv("USE_LLM_CLASSIFICATION", "false").lower() == "true"
+        
         # クエリを分類
-        search_type, filters, semantic_query = classify_query(query)
-        log.info(f"Query: '{query}' → Type: {search_type}, Filters: {filters}, Semantic: '{semantic_query}'")
+        search_type, filters, semantic_query = classify_query(query, use_llm=use_llm_classification)
+        log.info(f"Query: '{query}' → Type: {search_type}, Filters: {filters}, Semantic: '{semantic_query}' (LLM: {use_llm_classification})")
         
         # 検索タイプに応じて処理を分岐
         if search_type == "structured":
