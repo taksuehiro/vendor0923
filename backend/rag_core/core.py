@@ -4,7 +4,7 @@ import traceback
 from pathlib import Path
 import numpy as np
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import BedrockEmbeddings
+from backend.vectorstore import BedrockEmbeddingsCompat
 from backend.rag_core_s3 import ensure_vectorstore_local
 
 log = logging.getLogger(__name__)
@@ -38,8 +38,10 @@ def build_or_load_vectorstore(docs=None):
         local_dir = "/tmp/vectorstore"
         Path(local_dir).mkdir(parents=True, exist_ok=True)
         ensure_vectorstore_local(bucket=bucket, prefix=prefix, local_dir=local_dir)
-        embeddings = BedrockEmbeddings(model_id=model_id, region_name=region)
+        embeddings = BedrockEmbeddingsCompat(model_id=model_id, region_name=region)
         vs = FAISS.load_local(local_dir, embeddings, allow_dangerous_deserialization=True)
+        # 念のためembedding_functionを明示上書き（二重防御）
+        vs.embedding_function = embeddings.embed_query
         log.info("FAISS loaded successfully from %s", local_dir)
         return vs
 
