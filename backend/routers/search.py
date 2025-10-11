@@ -29,13 +29,19 @@ def do_search(query: str, k: int = 5):
     return search_vendors(_vs, query, k)
 
 def normalize(results):
-    """Normalize search results to expected format"""
+    """Normalize search results to frontend expected format
+    
+    Converts:
+        page_content -> text
+        similarity -> score
+        metadata -> metadata
+    """
     normalized = []
-    for doc, score in results:
+    for r in results:
         normalized.append({
-            "text": doc.page_content,
-            "score": float(score),
-            "metadata": doc.metadata or {}
+            "text": r.get("page_content", ""),
+            "score": r.get("similarity", 0.0),
+            "metadata": r.get("metadata", {})
         })
     return normalized
 
@@ -43,7 +49,9 @@ def normalize(results):
 async def search(payload: SearchRequest):
     try:
         results = do_search(payload.query, k=payload.k or 5)
-        return {"results": results}  # normalize()を削除し、変換済みスコアをそのまま返す
+        # フロントエンドが期待する形式（text, score）に変換
+        normalized_results = normalize(results)
+        return {"results": normalized_results}
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
