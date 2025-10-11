@@ -6,7 +6,6 @@ import boto3
 from botocore.exceptions import ClientError
 from fastapi import HTTPException
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import BedrockEmbeddings
 
 # ==== 環境変数（統一＆後方互換） ============================================
 # 推奨：S3_BUCKET_NAME / S3_PREFIX を正とする（旧名もフォールバック）
@@ -30,12 +29,20 @@ def _normalize_model_id(raw: str) -> str:
 
 EMBED_MODEL_ID = _normalize_model_id(RAW_MODEL_ID)
 
+# ==== 互換ラッパー（方式A） ================================================
+from langchain_community.embeddings import BedrockEmbeddings as _LCBedrockEmbeddings
+
+class BedrockEmbeddingsCompat(_LCBedrockEmbeddings):
+    """FAISSや旧コードが callable 前提でも動くようにする互換ラッパー"""
+    def __call__(self, text: str):
+        return self.embed_query(text)
+
 # ==== グローバルキャッシュ ===================================================
 VSTORE = None
 
-def _init_embeddings() -> BedrockEmbeddings:
-    """LangChain公式の BedrockEmbeddings（V1）で初期化"""
-    return BedrockEmbeddings(
+def _init_embeddings() -> BedrockEmbeddingsCompat:
+    """互換ラッパー付きの BedrockEmbeddings（V1）で初期化"""
+    return BedrockEmbeddingsCompat(
         model_id=EMBED_MODEL_ID,      # 例: amazon.titan-embed-text-v1
         region_name=BEDROCK_REGION,   # 例: ap-northeast-1
     )
@@ -71,11 +78,14 @@ def load_vectorstore():
             bucket.download_file(obj.key, dst_path)
 
         # --- FAISS ロード（V1 Embeddings を渡す）---
+        emb = _init_embeddings()
         VSTORE = FAISS.load_local(
             folder_path=local_dir,
-            embeddings=_init_embeddings(),
+            embeddings=emb,
             allow_dangerous_deserialization=True,
         )
+        # 念のためembedding_functionを明示上書き（方式B：安全策）
+        VSTORE.embedding_function = emb.embed_query
         return VSTORE
 
     except ClientError as e:
