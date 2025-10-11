@@ -5,6 +5,11 @@ import sys
 import traceback
 from backend.models import SearchRequest
 from backend.rag_core.core import build_or_load_vectorstore, search_vendors
+from backend.structured_search import (
+    classify_query,
+    structured_search,
+    hybrid_search
+)
 
 log = logging.getLogger(__name__)
 
@@ -48,10 +53,30 @@ def normalize(results):
 @router.post("/search")
 async def search(payload: SearchRequest):
     try:
-        results = do_search(payload.query, k=payload.k or 5)
-        # フロントエンドが期待する形式（text, score）に変換
+        query = payload.query
+        k = payload.k or 5
+        
+        # クエリを分類
+        search_type, filters, semantic_query = classify_query(query)
+        log.info(f"Query: '{query}' → Type: {search_type}, Filters: {filters}, Semantic: '{semantic_query}'")
+        
+        # 検索タイプに応じて処理を分岐
+        if search_type == "structured":
+            # 純粋な構造化検索（「面談済みの会社」など）
+            results = structured_search(filters, k=k)
+        
+        elif search_type == "hybrid":
+            # ハイブリッド検索（「面談済みのチャットボット企業」など）
+            results = hybrid_search(filters, semantic_query, k=k)
+        
+        else:
+            # 純粋なセマンティック検索（既存ロジック）
+            results = do_search(query, k=k)
+        
+        # フロントエンドが期待する形式に変換
         normalized_results = normalize(results)
         return {"results": normalized_results}
+    
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
