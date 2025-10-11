@@ -5,6 +5,7 @@ vendors.jsonをPandas DataFrameとして管理し、メタデータベースの�
 """
 import json
 import logging
+import math
 import os
 import re
 from pathlib import Path
@@ -200,27 +201,52 @@ def hybrid_search(
             metadata=row.to_dict()
         ))
     
-    # Step 3: 一時的なFAISSインデックス作成
-    embeddings = get_embeddings()
-    temp_vs = FAISS.from_documents(docs, embeddings)
-    log.info(f"Created temporary FAISS index with {len(docs)} documents")
-    
-    # Step 4: セマンティック検索
-    faiss_results = temp_vs.similarity_search_with_score(semantic_query, k=k)
-    
-    # Step 5: 結果を整形
-    results = []
-    for doc, distance in faiss_results:
-        # 距離を類似度に変換
-        similarity = float(1.0 / (1.0 + distance))
-        results.append({
+    # Step 3: 一時的なFAISSインデックス作成（最小件数チェック）
+    if len(docs) < 2:
+        log.warning(f"Too few documents for FAISS ({len(docs)}), returning direct results")
+        # FAISSを使わずに結果を返す
+        return [{
             "page_content": doc.page_content,
-            "similarity": similarity,
+            "similarity": 1.0,
             "metadata": doc.metadata
-        })
+        } for doc in docs[:k]]
     
-    log.info(f"Hybrid search returned {len(results)} results")
-    return results
+    try:
+        embeddings = get_embeddings()
+        temp_vs = FAISS.from_documents(docs, embeddings)
+        log.info(f"Created temporary FAISS index with {len(docs)} documents")
+        
+        # Step 4: セマンティック検索
+        faiss_results = temp_vs.similarity_search_with_score(semantic_query, k=k)
+        
+        # Step 5: 結果を整形（安全な距離変換）
+        results = []
+        for doc, distance in faiss_results:
+            # 異常な距離値をチェック
+            if distance is None or math.isnan(distance) or math.isinf(distance) or distance < 0:
+                log.warning(f"Abnormal distance detected: {distance} for doc: {doc.page_content[:50]}...")
+                similarity = 0.0
+            else:
+                # 距離を類似度に変換し、[0.0, 1.0]にクランプ
+                similarity = max(0.0, min(1.0, float(1.0 / (1.0 + distance))))
+            
+            results.append({
+                "page_content": doc.page_content,
+                "similarity": similarity,
+                "metadata": doc.metadata
+            })
+        
+        log.info(f"Hybrid search returned {len(results)} results")
+        return results
+    
+    except Exception as e:
+        log.error(f"FAISS search failed: {e}, returning filtered results as-is")
+        # FAISSが失敗した場合は、フィルタ結果をそのまま返す
+        return [{
+            "page_content": doc.page_content,
+            "similarity": 1.0,
+            "metadata": doc.metadata
+        } for doc in docs[:k]]
 
 
 def classify_query(query: str, use_llm: bool = False) -> Tuple[str, Dict[str, str], str]:
