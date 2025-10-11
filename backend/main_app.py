@@ -9,6 +9,18 @@ from backend.rag_core.core import build_or_load_vectorstore  # ← 余計な定�
 log = logging.getLogger(__name__)
 app = FastAPI()
 
+# CORSミドルウェアは起動イベントより前に追加する
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://main.d167z8rnntj0xs.amplifyapp.com",  # Amplify URL
+        "http://localhost:3000",  # ローカル開発用
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("startup")
 async def startup_event():
     # 起動時に設定を明示
@@ -26,17 +38,6 @@ async def startup_event():
         log.error("❌ Failed to load FAISS vectorstore: %s", e)
         # ここでraiseしておくと致命時は起動させない判断も可
         # raise e
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://main.d167z8rnntj0xs.amplifyapp.com",  # あなたのAmplify URL
-        # 独自ドメインを使う場合はここに追加
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/health")
 def health():
